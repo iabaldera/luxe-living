@@ -2,6 +2,7 @@ export const categoryColor: Record<string, string> = {
   turismo: "#C9A96E",
   gastronomia: "#D9BE89",
   entretenimiento: "#A8874E",
+  estancias: "#F8F5F0",
 };
 
 // CartoDB DarkMatter — premium dark neutral tiles, free for non-heavy use.

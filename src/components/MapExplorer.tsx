@@ -3,13 +3,13 @@
 import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import type { PlaceRow } from "@/lib/supabase/types";
+import type { PlaceRow, PropertyRow } from "@/lib/supabase/types";
 import PlaceCard from "./PlaceCard";
 
 const LeafletMap = dynamic(() => import("./LeafletMap"), { ssr: false });
 
-type Cat = PlaceRow["categoria"];
-const CATS: Array<Cat | "all"> = ["all", "turismo", "gastronomia", "entretenimiento"];
+type Cat = PlaceRow["categoria"] | "estancias";
+const CATS: Array<Cat | "all"> = ["all", "estancias", "turismo", "gastronomia", "entretenimiento"];
 
 const CAT_ICONS: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
   all: (p) => (
@@ -32,12 +32,18 @@ const CAT_ICONS: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
       <path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" />
     </svg>
   ),
+  estancias: (p) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...p}>
+      <path d="M3 11l9-7 9 7v9a2 2 0 0 1-2 2h-4v-6h-6v6H5a2 2 0 0 1-2-2v-9z" />
+    </svg>
+  ),
 };
 
 export default function MapExplorer({
   places: placesData,
+  properties: propertiesData = [],
   initialCategory = "all" as Cat | "all",
-}: { places: PlaceRow[]; initialCategory?: Cat | "all" }) {
+}: { places: PlaceRow[]; properties?: PropertyRow[]; initialCategory?: Cat | "all" }) {
   const t = useTranslations("map");
   const locale = useLocale();
   const [active, setActive] = useState<Cat | "all">(initialCategory);
@@ -46,20 +52,23 @@ export default function MapExplorer({
   const [selected, setSelected] = useState<PlaceRow | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
+  const propsWithCoords = useMemo(() => propertiesData.filter((p) => p.lat != null && p.lng != null), [propertiesData]);
+
   const counts = useMemo(() => {
-    const c: Record<string, number> = { all: placesData.length };
+    const c: Record<string, number> = { all: placesData.length + propsWithCoords.length, estancias: propsWithCoords.length };
     for (const p of placesData) c[p.categoria] = (c[p.categoria] ?? 0) + 1;
     return c;
-  }, [placesData]);
+  }, [placesData, propsWithCoords]);
 
   const subcats = useMemo(() => {
-    if (active === "all") return [];
+    if (active === "all" || active === "estancias") return [];
     const set = new Set<string>();
     for (const p of placesData) if (p.categoria === active && p.subcategoria) set.add(p.subcategoria);
     return Array.from(set).sort();
   }, [active, placesData]);
 
   const places = useMemo(() => {
+    if (active === "estancias") return [];
     const q = query.trim().toLowerCase();
     return placesData.filter((p) => {
       if (active !== "all" && p.categoria !== active) return false;
@@ -69,6 +78,16 @@ export default function MapExplorer({
       return hay.includes(q);
     });
   }, [active, sub, query, placesData]);
+
+  const properties = useMemo(() => {
+    if (active !== "all" && active !== "estancias") return [];
+    const q = query.trim().toLowerCase();
+    return propsWithCoords.filter((p) => {
+      if (!q) return true;
+      const hay = `${p.nombre} ${p.nombre_en ?? ""} ${p.ubicacion ?? ""} ${p.descripcion ?? ""}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }, [active, query, propsWithCoords]);
 
   const pickCat = (c: Cat | "all") => { setActive(c); setSub(null); };
   const subLabel = (s: string) => s.replace(/-/g, " ");
@@ -88,7 +107,7 @@ export default function MapExplorer({
             <button onClick={() => setQuery("")} className="text-luxe-muted hover:text-luxe-black text-xs px-2">×</button>
           )}
           <span className="text-[10px] tracking-luxe uppercase text-luxe-muted border-l border-luxe-line pl-3 pr-1">
-            {places.length}
+            {places.length + properties.length}
           </span>
         </div>
 
@@ -144,12 +163,14 @@ export default function MapExplorer({
       <div className="absolute inset-0">
         <LeafletMap
           places={places}
+          properties={properties}
           selected={selected}
           onSelect={setSelected}
           locale={locale}
           t={{
             openInMaps: t("openInMaps"),
             cat: (k: string) => t(`categories.${k}`),
+            viewProperty: locale === "en" ? "View stay" : "Ver estancia",
           }}
         />
       </div>

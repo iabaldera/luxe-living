@@ -83,6 +83,7 @@
     "openInMaps": "Open in Google Maps",
     "categories": {
       "all": "All",
+      "estancias": "Stays",
       "turismo": "Sightseeing",
       "gastronomia": "Dining",
       "entretenimiento": "Nightlife"

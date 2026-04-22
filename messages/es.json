@@ -83,6 +83,7 @@
     "openInMaps": "Ver en Google Maps",
     "categories": {
       "all": "Todos",
+      "estancias": "Estancias",
       "turismo": "Turismo",
       "gastronomia": "Gastronomía",
       "entretenimiento": "Entretenimiento"
