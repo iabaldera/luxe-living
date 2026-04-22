@@ -15,11 +15,17 @@ export default async function SplashPage({
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       <div
         className="absolute inset-0 bg-cover bg-center"
-        style={{
-          backgroundImage:
-            "linear-gradient(180deg, rgba(10,10,10,0.55), rgba(10,10,10,0.75)), url('/images/property-default.jpg')",
-        }}
+        style={{ backgroundImage: "url('/images/property-default.jpg')" }}
       />
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <iframe
+          src="https://www.youtube.com/embed/yXAmSmcDi3E?autoplay=1&mute=1&loop=1&playlist=yXAmSmcDi3E&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3"
+          allow="autoplay; encrypted-media"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[177.78vh] h-[56.25vw] min-w-full min-h-full"
+          style={{ border: 0 }}
+        />
+      </div>
+      <div className="absolute inset-0 bg-gradient-to-b from-black/55 to-black/75" />
       <div className="absolute inset-0 backdrop-blur-[2px]" />
 
       <div className="relative z-10 text-center px-8 max-w-xl">
