@@ -52,4 +52,12 @@ export interface ContactSettings {
   telegram: string;
   email: string;
   brand: string;
+  logo?: string | null;
+  favicon?: string | null;
+  assistantName?: string;
+  assistantRole?: string;
+  assistantRole_en?: string;
+  assistantPhoto?: string | null;
+  assistantGreeting?: string;
+  assistantGreeting_en?: string;
 }

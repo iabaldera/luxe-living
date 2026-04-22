@@ -13,10 +13,11 @@ const NAV = [
   { href: "/mapa", key: "explore", icon: MapIcon },
 ] as const;
 
-export default function Shell({ children }: { children: React.ReactNode }) {
+export default function Shell({ children, logoUrl, brand }: { children: React.ReactNode; logoUrl?: string | null; brand?: string }) {
   const t = useTranslations("nav");
   const tBrand = useTranslations("brand");
   const pathname = usePathname();
+  const brandName = brand || tBrand("name");
   const [showBar, setShowBar] = useState(true);
   const isSplash = pathname === "/";
 
@@ -35,8 +36,8 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen flex">
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 border-r border-luxe-line bg-luxe-bone px-8 py-10">
-        <Link href="/" className="font-serif text-2xl tracking-wide text-luxe-black">
-          {tBrand("name")}
+        <Link href="/" className="flex items-center gap-2 font-serif text-2xl tracking-wide text-luxe-black">
+          {logoUrl ? <img src={logoUrl} alt={brandName} className="max-h-10 w-auto object-contain" /> : brandName}
         </Link>
         <nav className="mt-14 flex flex-col gap-2">
           {NAV.map(({ href, key, icon: Icon }) => {
@@ -63,8 +64,8 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       <main className="flex-1 lg:ml-64 pb-24 lg:pb-0">
         {!isSplash && (
           <header className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-6 py-4 bg-luxe-bone/90 backdrop-blur border-b border-luxe-line">
-            <Link href="/" className="font-serif text-lg tracking-wide">
-              {tBrand("name")}
+            <Link href="/" className="flex items-center gap-2 font-serif text-lg tracking-wide">
+              {logoUrl ? <img src={logoUrl} alt={brandName} className="max-h-7 w-auto object-contain" /> : brandName}
             </Link>
             <LocaleSwitcher compact />
           </header>

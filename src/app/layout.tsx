@@ -3,13 +3,27 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import "./globals.css";
 import Shell from "@/components/Shell";
+import { getContact } from "@/lib/data";
 
-export const metadata: Metadata = {
-  title: "Luxe Living — Guest Portal",
-  description: "Una experiencia íntima en Santiago de los Caballeros.",
-  manifest: "/manifest.webmanifest",
-  icons: { icon: "/icon.svg" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const c = await getContact();
+    const icon = c.favicon || c.logo || "/icon.svg";
+    return {
+      title: `${c.brand || "Luxe Living"} — Guest Portal`,
+      description: "Una experiencia íntima en Santiago de los Caballeros.",
+      manifest: "/manifest.webmanifest",
+      icons: { icon },
+    };
+  } catch {
+    return {
+      title: "Luxe Living — Guest Portal",
+      description: "Una experiencia íntima en Santiago de los Caballeros.",
+      manifest: "/manifest.webmanifest",
+      icons: { icon: "/icon.svg" },
+    };
+  }
+}
 
 export const viewport: Viewport = {
   themeColor: "#0A0A0A",
@@ -21,6 +35,13 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
   const messages = await getMessages();
+  let logo: string | null = null;
+  let brand: string | undefined;
+  try {
+    const c = await getContact();
+    logo = c.logo ?? null;
+    brand = c.brand;
+  } catch {}
 
   return (
     <html lang={locale}>
@@ -34,7 +55,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body>
         <NextIntlClientProvider messages={messages} locale={locale}>
-          <Shell>{children}</Shell>
+          <Shell logoUrl={logo} brand={brand}>{children}</Shell>
         </NextIntlClientProvider>
       </body>
     </html>
