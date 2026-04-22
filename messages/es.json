@@ -30,7 +30,7 @@
       "telegram": "Telegram",
       "email": "Correo"
     },
-    "messageTemplate": "Hola {brand}, me gustaría reservar *{property}*.\n\n• Llegada: {checkin}\n• Salida: {checkout}\n• Huéspedes: {guests}\n• Nombre: {name}\n\n{notes}\n\nGracias."
+    "messageTemplate": "Hola {assistant}, me gustaría reservar *{property}*.\n\n• Llegada: {checkin}\n• Salida: {checkout}\n• Huéspedes: {guests}\n• Nombre: {name}\n\n{notes}\n\nUbicación: {mapUrl}\n\nGracias."
   },
   "amenities": {
     "wifi": "WiFi",
