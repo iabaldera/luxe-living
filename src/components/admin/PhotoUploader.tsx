@@ -3,20 +3,27 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/browser";
 
 const BUCKET = "luxe-media";
+const MAX_PHOTOS = 10;
 
 export default function PhotoUploader({
-  folder, values, onChange,
-}: { folder: string; values: string[]; onChange: (fotos: string[]) => void }) {
+  folder, values, onChange, max = MAX_PHOTOS,
+}: { folder: string; values: string[]; onChange: (fotos: string[]) => void; max?: number }) {
   const supabase = createClient();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const remaining = Math.max(0, max - values.length);
+  const atLimit = remaining === 0;
 
   async function upload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
-    setBusy(true); setErr(null);
+    e.target.value = "";
+    if (atLimit) { setErr(`Máximo ${max} fotos.`); return; }
+    const toUpload = files.slice(0, remaining);
+    const skipped = files.length - toUpload.length;
+    setBusy(true); setErr(skipped > 0 ? `Se omitieron ${skipped} foto(s): límite de ${max}.` : null);
     const urls: string[] = [];
-    for (const f of files) {
+    for (const f of toUpload) {
       const ext = f.name.split(".").pop() || "jpg";
       const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
       const { error } = await supabase.storage.from(BUCKET).upload(path, f, { cacheControl: "3600" });
@@ -25,7 +32,6 @@ export default function PhotoUploader({
       urls.push(data.publicUrl);
     }
     setBusy(false);
-    e.target.value = "";
     if (urls.length) onChange([...values, ...urls]);
   }
 
@@ -52,13 +58,17 @@ export default function PhotoUploader({
             </div>
           </div>
         ))}
-        <label className="aspect-square border-2 border-dashed border-luxe-line rounded-sm flex items-center justify-center text-xs tracking-luxe uppercase text-luxe-muted hover:text-luxe-gold hover:border-luxe-gold cursor-pointer">
-          <input type="file" accept="image/*" multiple onChange={upload} className="hidden" disabled={busy} />
-          {busy ? "Subiendo…" : "+ Subir"}
-        </label>
+        {!atLimit && (
+          <label className="aspect-square border-2 border-dashed border-luxe-line rounded-sm flex items-center justify-center text-xs tracking-luxe uppercase text-luxe-muted hover:text-luxe-gold hover:border-luxe-gold cursor-pointer">
+            <input type="file" accept="image/*" multiple onChange={upload} className="hidden" disabled={busy} />
+            {busy ? "Subiendo…" : "+ Subir"}
+          </label>
+        )}
       </div>
       {err && <p className="mt-3 text-sm text-red-600">{err}</p>}
-      <p className="mt-3 text-xs text-luxe-muted">La primera foto se usa como portada. Arrastra con ← → para reordenar.</p>
+      <p className="mt-3 text-xs text-luxe-muted">
+        {values.length}/{max} fotos · La primera se usa como portada. Reordena con ← →.
+      </p>
     </div>
   );
 }
