@@ -1,0 +1,92 @@
+{
+  "brand": { "name": "Luxe Living" },
+  "nav": {
+    "home": "Inicio",
+    "stays": "Estancias",
+    "rules": "Reglas",
+    "explore": "Explorar"
+  },
+  "properties": {
+    "title": "Nuestras residencias",
+    "subtitle": "Estancias seleccionadas en Santiago de los Caballeros.",
+    "perNight": "por noche",
+    "guests": "huéspedes",
+    "bedrooms": "hab.",
+    "bathrooms": "baños",
+    "viewDetails": "Ver detalles",
+    "requestBooking": "Solicitar reserva",
+    "about": "Sobre la residencia",
+    "amenities": "Amenidades",
+    "form": {
+      "title": "Solicita tu reserva",
+      "subtitle": "Completa los datos y envía tu solicitud por el canal que prefieras.",
+      "name": "Nombre completo",
+      "checkin": "Llegada",
+      "checkout": "Salida",
+      "guests": "Huéspedes",
+      "notes": "Notas (opcional)",
+      "sendVia": "Enviar por",
+      "whatsapp": "WhatsApp",
+      "telegram": "Telegram",
+      "email": "Correo"
+    },
+    "messageTemplate": "Hola {brand}, me gustaría reservar *{property}*.\n\n• Llegada: {checkin}\n• Salida: {checkout}\n• Huéspedes: {guests}\n• Nombre: {name}\n\n{notes}\n\nGracias."
+  },
+  "amenities": {
+    "wifi": "WiFi",
+    "piscina": "Piscina",
+    "gym": "Gimnasio",
+    "parking": "Estacionamiento",
+    "ac": "A/C",
+    "cocina": "Cocina equipada",
+    "bbq": "BBQ"
+  },
+  "splash": {
+    "welcomeTo": "Bienvenido a",
+    "defaultProperty": "tu residencia Luxe",
+    "tagline": "Una experiencia íntima en Santiago de los Caballeros.",
+    "cta": "Ver residencias"
+  },
+  "rules": {
+    "title": "Reglas del condominio",
+    "subtitle": "Un entorno tranquilo y armonioso para todos.",
+    "items": {
+      "silencio": {
+        "title": "Silencio nocturno",
+        "desc": "Desde las 10:00 p. m. hasta las 8:00 a. m. el volumen se mantiene bajo por respeto a los vecinos."
+      },
+      "huespedes": {
+        "title": "Huéspedes autorizados",
+        "desc": "Sólo las personas registradas en la reserva pueden pernoctar en la propiedad."
+      },
+      "mascotas": {
+        "title": "Mascotas",
+        "desc": "Las mascotas no están permitidas salvo autorización previa por escrito."
+      },
+      "fumar": {
+        "title": "No fumar",
+        "desc": "La propiedad es libre de humo. Fumar sólo está permitido en áreas exteriores designadas."
+      },
+      "amenidades": {
+        "title": "Uso de amenidades",
+        "desc": "Piscina y gimnasio disponibles de 6:00 a. m. a 10:00 p. m. según reglamento del condominio."
+      },
+      "checkout": {
+        "title": "Check-out",
+        "desc": "Check-out a las 11:00 a. m. Avísanos si necesitas una salida tardía."
+      }
+    }
+  },
+  "map": {
+    "title": "Explora Santiago",
+    "subtitle": "Lugares seleccionados por nuestro equipo.",
+    "openInMaps": "Ver en Google Maps",
+    "categories": {
+      "all": "Todos",
+      "turismo": "Turismo",
+      "gastronomia": "Gastronomía",
+      "entretenimiento": "Entretenimiento"
+    }
+  },
+  "lang": { "label": "Idioma", "es": "ES", "en": "EN" }
+}

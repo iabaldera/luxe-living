@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-serif: "Playfair Display", "Cormorant Garamond", serif;
+  --font-sans: "DM Sans", "Outfit", ui-sans-serif, system-ui, sans-serif;
+}
+
+html, body { height: 100%; }
+body {
+  background: #F8F5F0;
+  color: #0A0A0A;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection { background: #C9A96E; color: #0A0A0A; }
+
+/* Hide scrollbar aesthetics */
+.scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: #E6DFD1; border-radius: 8px; }

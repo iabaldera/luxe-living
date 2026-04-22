@@ -1,0 +1,92 @@
+{
+  "brand": { "name": "Luxe Living" },
+  "nav": {
+    "home": "Home",
+    "stays": "Stays",
+    "rules": "Rules",
+    "explore": "Explore"
+  },
+  "properties": {
+    "title": "Our residences",
+    "subtitle": "Handpicked stays in Santiago de los Caballeros.",
+    "perNight": "per night",
+    "guests": "guests",
+    "bedrooms": "bd",
+    "bathrooms": "ba",
+    "viewDetails": "View details",
+    "requestBooking": "Request booking",
+    "about": "About this residence",
+    "amenities": "Amenities",
+    "form": {
+      "title": "Request your reservation",
+      "subtitle": "Fill in the details and send your request through your preferred channel.",
+      "name": "Full name",
+      "checkin": "Check-in",
+      "checkout": "Check-out",
+      "guests": "Guests",
+      "notes": "Notes (optional)",
+      "sendVia": "Send via",
+      "whatsapp": "WhatsApp",
+      "telegram": "Telegram",
+      "email": "Email"
+    },
+    "messageTemplate": "Hello {brand}, I'd like to book *{property}*.\n\n• Check-in: {checkin}\n• Check-out: {checkout}\n• Guests: {guests}\n• Name: {name}\n\n{notes}\n\nThank you."
+  },
+  "amenities": {
+    "wifi": "WiFi",
+    "piscina": "Pool",
+    "gym": "Gym",
+    "parking": "Parking",
+    "ac": "A/C",
+    "cocina": "Full kitchen",
+    "bbq": "BBQ"
+  },
+  "splash": {
+    "welcomeTo": "Welcome to",
+    "defaultProperty": "your Luxe residence",
+    "tagline": "An intimate experience in Santiago de los Caballeros.",
+    "cta": "View residences"
+  },
+  "rules": {
+    "title": "House rules",
+    "subtitle": "A calm, harmonious environment for everyone.",
+    "items": {
+      "silencio": {
+        "title": "Quiet hours",
+        "desc": "From 10:00 p.m. to 8:00 a.m. please keep noise to a minimum out of respect for neighbors."
+      },
+      "huespedes": {
+        "title": "Registered guests",
+        "desc": "Only guests listed on the reservation may stay overnight."
+      },
+      "mascotas": {
+        "title": "Pets",
+        "desc": "Pets are not allowed unless previously authorized in writing."
+      },
+      "fumar": {
+        "title": "No smoking",
+        "desc": "This is a smoke-free property. Smoking is only allowed in designated outdoor areas."
+      },
+      "amenidades": {
+        "title": "Amenities",
+        "desc": "Pool and gym open from 6:00 a.m. to 10:00 p.m. per building regulations."
+      },
+      "checkout": {
+        "title": "Check-out",
+        "desc": "Check-out at 11:00 a.m. Let us know if you need a late departure."
+      }
+    }
+  },
+  "map": {
+    "title": "Explore Santiago",
+    "subtitle": "Places handpicked by our team.",
+    "openInMaps": "Open in Google Maps",
+    "categories": {
+      "all": "All",
+      "turismo": "Sightseeing",
+      "gastronomia": "Dining",
+      "entretenimiento": "Nightlife"
+    }
+  },
+  "lang": { "label": "Language", "es": "ES", "en": "EN" }
+}

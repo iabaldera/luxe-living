@@ -1,0 +1,63 @@
+[
+  {
+    "id": "penthouse-norte",
+    "nombre": "Penthouse Norte",
+    "nombre_en": "North Penthouse",
+    "ubicacion": "Cerros de Gurabo, Santiago",
+    "ubicacion_en": "Cerros de Gurabo, Santiago",
+    "descripcion": "Penthouse de 3 habitaciones con terraza privada, jacuzzi y vistas panorámicas al Monumento. Diseño minimalista en tonos neutros.",
+    "descripcion_en": "3-bedroom penthouse with private terrace, jacuzzi and panoramic Monument views. Minimalist design in neutral tones.",
+    "habitaciones": 3,
+    "banos": 3,
+    "huespedes": 6,
+    "precio_noche": 220,
+    "moneda": "USD",
+    "amenidades": ["wifi", "piscina", "gym", "parking", "ac", "cocina"],
+    "foto": "/images/propiedades/penthouse-norte-1.jpg",
+    "fotos": [
+      "/images/propiedades/penthouse-norte-1.jpg",
+      "/images/propiedades/penthouse-norte-2.jpg",
+      "/images/propiedades/penthouse-norte-3.jpg"
+    ]
+  },
+  {
+    "id": "villa-gurabo",
+    "nombre": "Villa Gurabo",
+    "nombre_en": "Villa Gurabo",
+    "ubicacion": "Gurabo, Santiago",
+    "ubicacion_en": "Gurabo, Santiago",
+    "descripcion": "Villa independiente con piscina privada, jardín tropical y 4 habitaciones. Ideal para familias o grupos que buscan privacidad.",
+    "descripcion_en": "Standalone villa with private pool, tropical garden and 4 bedrooms. Ideal for families or groups seeking privacy.",
+    "habitaciones": 4,
+    "banos": 4,
+    "huespedes": 8,
+    "precio_noche": 340,
+    "moneda": "USD",
+    "amenidades": ["wifi", "piscina", "parking", "ac", "cocina", "bbq"],
+    "foto": "/images/propiedades/villa-gurabo-1.jpg",
+    "fotos": [
+      "/images/propiedades/villa-gurabo-1.jpg",
+      "/images/propiedades/villa-gurabo-2.jpg"
+    ]
+  },
+  {
+    "id": "suite-monumento",
+    "nombre": "Suite Monumento",
+    "nombre_en": "Monument Suite",
+    "ubicacion": "Centro, Santiago",
+    "ubicacion_en": "Downtown, Santiago",
+    "descripcion": "Suite boutique de 1 habitación frente al Monumento. Perfecta para viajeros de negocios o escapadas románticas.",
+    "descripcion_en": "One-bedroom boutique suite facing the Monument. Perfect for business travelers or romantic getaways.",
+    "habitaciones": 1,
+    "banos": 1,
+    "huespedes": 2,
+    "precio_noche": 120,
+    "moneda": "USD",
+    "amenidades": ["wifi", "gym", "ac", "cocina"],
+    "foto": "/images/propiedades/suite-monumento-1.jpg",
+    "fotos": [
+      "/images/propiedades/suite-monumento-1.jpg",
+      "/images/propiedades/suite-monumento-2.jpg"
+    ]
+  }
+]
