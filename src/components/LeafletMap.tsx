@@ -54,7 +54,7 @@ export default function LeafletMap({
   }, []);
 
   return (
-    <MapContainer center={CENTER} zoom={14} style={{ height: "100%", width: "100%" }} zoomControl>
+    <MapContainer center={CENTER} zoom={14} style={{ height: "100%", width: "100%" }} zoomControl={false}>
       <TileLayer url={TILE_URL} attribution={TILE_ATTRIBUTION} subdomains={["a", "b", "c", "d"]} />
       {places.map((p) => (
         <Marker
