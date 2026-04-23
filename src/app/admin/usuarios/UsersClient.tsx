@@ -106,7 +106,12 @@ export default function UsersClient({ users: initialUsers }: { users: AdminUser[
         <UserEditor
           user={editing}
           onClose={() => { setEditing(null); setCreating(false); }}
-          onSaved={(action) => {
+          onSaved={(action, payload) => {
+            if (action === "deleted" && payload?.id) {
+              setUsers((arr) => arr.filter((u) => u.id !== payload.id));
+            } else if (action === "updated" && payload?.id) {
+              setUsers((arr) => arr.map((u) => u.id === payload.id ? { ...u, email: payload.email ?? u.email, user_metadata: { ...(u.user_metadata || {}), ...(payload.user_metadata || {}) } } : u));
+            }
             setEditing(null);
             setCreating(false);
             reloadFromServer();
@@ -118,7 +123,7 @@ export default function UsersClient({ users: initialUsers }: { users: AdminUser[
   );
 }
 
-function UserEditor({ user, onClose, onSaved }: { user: AdminUser | null; onClose: () => void; onSaved: (action: "created" | "updated" | "deleted") => void }) {
+function UserEditor({ user, onClose, onSaved }: { user: AdminUser | null; onClose: () => void; onSaved: (action: "created" | "updated" | "deleted", payload?: { id?: string; email?: string; user_metadata?: any }) => void }) {
   const supabase = createClient();
   const toast = useToast();
   const isNew = !user;
@@ -161,7 +166,11 @@ function UserEditor({ user, onClose, onSaved }: { user: AdminUser | null; onClos
       toast.push({ kind: "error", msg });
       return;
     }
-    onSaved(isNew ? "created" : "updated");
+    onSaved(isNew ? "created" : "updated", {
+      id: user?.id,
+      email,
+      user_metadata: { nombre, telefono, avatar_url: avatar, role },
+    });
   }
 
   async function remove() {
@@ -181,7 +190,7 @@ function UserEditor({ user, onClose, onSaved }: { user: AdminUser | null; onClos
       toast.push({ kind: "error", msg });
       return;
     }
-    onSaved("deleted");
+    onSaved("deleted", { id: user.id });
   }
 
   return (
