@@ -57,13 +57,22 @@ export default function Shell({ children, logoUrl, brand }: { children: React.Re
             );
           })}
         </nav>
-        <div className="mt-auto flex items-center gap-3">
-          <AccountButton />
+        <div className="mt-auto space-y-4">
+          <div className="flex items-center gap-2 px-3 py-2 border border-luxe-line rounded-sm bg-white/50">
+            <AccountButton />
+            <span className="text-[11px] tracking-luxe uppercase text-luxe-muted">Mi cuenta</span>
+          </div>
           <LocaleSwitcher />
         </div>
       </aside>
 
       <main className="flex-1 lg:ml-64 pb-24 lg:pb-0">
+        {isSplash && (
+          <div className="lg:hidden fixed top-4 right-4 z-40 flex items-center gap-2 bg-luxe-bone/85 backdrop-blur px-2 py-1.5 rounded-full border border-luxe-line shadow-soft">
+            <AccountButton compact />
+            <LocaleSwitcher compact />
+          </div>
+        )}
         {!isSplash && (
           <header className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-6 py-4 bg-luxe-bone/90 backdrop-blur border-b border-luxe-line">
             <Link href="/" className="flex items-center gap-2 font-serif text-lg tracking-wide">
