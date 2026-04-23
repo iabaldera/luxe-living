@@ -10,34 +10,39 @@ import { useEffect, useState } from "react";
 
 const CENTER: [number, number] = [19.4517, -70.697];
 
-function makeIcon(color: string, isProperty = false, custom?: { icono?: string | null; color?: string | null }) {
+function makeIcon(color: string, isProperty = false, custom?: { icono?: string | null; color?: string | null; isPhoto?: boolean }) {
   const fill = custom?.color || color;
   const raw = (custom?.icono || "").trim();
   const isImg = /^https?:\/\//i.test(raw) || /^\/.+\.(png|jpg|jpeg|svg|webp|gif)(\?.*)?$/i.test(raw);
   const size = isProperty ? 42 : 36;
   const stroke = isProperty ? "#C9A96E" : "#0A0A0A";
 
-  const inner = raw
-    ? (isImg
-        ? `<img src="${escapeAttr(raw)}" alt="" style="width:62%;height:62%;object-fit:contain;pointer-events:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.25));" />`
-        : `<span style="font-size:${Math.round(size * 0.48)}px;line-height:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,0.25));">${escapeHtml(raw)}</span>`)
-    : (isProperty
-        ? `<svg viewBox="0 0 24 24" width="${Math.round(size * 0.5)}" height="${Math.round(size * 0.5)}" fill="none" stroke="#C9A96E" stroke-width="1.4"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-5h-6v5H5a1 1 0 0 1-1-1z"/></svg>`
-        : `<span style="width:8px;height:8px;border-radius:50%;background:#C9A96E;box-shadow:0 0 0 2px rgba(201,169,110,0.25);"></span>`);
+  const photoMode = !!custom?.isPhoto && isImg;
+  const pinFill = photoMode ? "#0A0A0A" : (raw ? fill : (isProperty ? "#0A0A0A" : "#141414"));
+  const border = "#C9A96E";
+  const photoSize = isProperty ? 46 : size;
 
-  const pinFill = raw ? fill : (isProperty ? "#0A0A0A" : "#141414");
-  const border = isProperty ? "#C9A96E" : "#C9A96E";
+  const inner = photoMode
+    ? `<img src="${escapeAttr(raw)}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" />`
+    : (raw
+        ? (isImg
+            ? `<img src="${escapeAttr(raw)}" alt="" style="width:62%;height:62%;object-fit:contain;pointer-events:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.25));" />`
+            : `<span style="font-size:${Math.round(size * 0.48)}px;line-height:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,0.25));">${escapeHtml(raw)}</span>`)
+        : (isProperty
+            ? `<svg viewBox="0 0 24 24" width="${Math.round(size * 0.5)}" height="${Math.round(size * 0.5)}" fill="none" stroke="#C9A96E" stroke-width="1.4"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-5h-6v5H5a1 1 0 0 1-1-1z"/></svg>`
+            : `<span style="width:8px;height:8px;border-radius:50%;background:#C9A96E;box-shadow:0 0 0 2px rgba(201,169,110,0.25);"></span>`));
 
-  const html = `<div class="luxe-pin" style="position:relative;width:${size}px;height:${size + 10}px;">
-    <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);width:${size}px;height:${size}px;border-radius:50%;background:${pinFill};border:1.5px solid ${border};display:flex;align-items:center;justify-content:center;box-shadow:0 6px 14px -4px rgba(0,0,0,0.45),0 2px 4px rgba(0,0,0,0.25),inset 0 0 0 3px rgba(255,255,255,0.04);">
-      ${inner}
+  const ringSize = photoMode ? photoSize : size;
+  const html = `<div class="luxe-pin" style="position:relative;width:${ringSize}px;height:${ringSize + 10}px;">
+    <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);width:${ringSize}px;height:${ringSize}px;border-radius:50%;background:${pinFill};border:${photoMode ? "2px" : "1.5px"} solid ${border};${photoMode ? "padding:2px;" : ""}display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 6px 14px -4px rgba(0,0,0,0.45),0 2px 4px rgba(0,0,0,0.25)${photoMode ? "" : ",inset 0 0 0 3px rgba(255,255,255,0.04)"};">
+      ${photoMode ? `<div style="width:100%;height:100%;border-radius:50%;overflow:hidden;">${inner}</div>` : inner}
     </div>
-    <div style="position:absolute;bottom:4px;left:50%;transform:translateX(-50%) rotate(45deg);width:10px;height:10px;background:${pinFill};border-right:1.5px solid ${border};border-bottom:1.5px solid ${border};box-shadow:2px 2px 4px -1px rgba(0,0,0,0.3);"></div>
+    <div style="position:absolute;bottom:4px;left:50%;transform:translateX(-50%) rotate(45deg);width:10px;height:10px;background:${photoMode ? border : pinFill};border-right:1.5px solid ${border};border-bottom:1.5px solid ${border};box-shadow:2px 2px 4px -1px rgba(0,0,0,0.3);"></div>
     <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:14px;height:4px;border-radius:50%;background:rgba(0,0,0,0.25);filter:blur(2px);"></div>
   </div>`;
 
-  const w = size;
-  const h = size + 10;
+  const w = ringSize;
+  const h = ringSize + 10;
   return L.divIcon({
     html,
     className: "luxe-marker",
@@ -162,7 +167,7 @@ export default function LeafletMap({
           <Marker
             key={`prop-${p.id}`}
             position={[p.lat as number, p.lng as number]}
-            icon={makeIcon(categoryColor.estancias, true, { icono: p.icono, color: p.icono_color })}
+            icon={makeIcon(categoryColor.estancias, true, { icono: p.icono || cover || null, color: p.icono_color, isPhoto: !p.icono && !!cover })}
           >
             <Popup>
               <div>
