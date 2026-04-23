@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import type { PlaceRow, PropertyRow } from "@/lib/supabase/types";
 import PlaceCard from "./PlaceCard";
@@ -51,6 +51,13 @@ export default function MapExplorer({
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<PlaceRow | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const filterRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const onDoc = (e: MouseEvent) => { if (filterRef.current && !filterRef.current.contains(e.target as Node)) setFilterOpen(false); };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
 
   const propsWithCoords = useMemo(() => propertiesData.filter((p) => p.lat != null && p.lng != null), [propertiesData]);
 
@@ -111,53 +118,69 @@ export default function MapExplorer({
           </span>
         </div>
 
-        <div className="flex gap-2 overflow-x-auto scrollbar-thin -mx-1 px-1 pb-1">
-          {CATS.map((c) => {
-            const Icon = CAT_ICONS[c];
-            const isActive = active === c;
+        <div ref={filterRef} className="relative self-start">
+          {(() => {
+            const ActiveIcon = CAT_ICONS[active];
             return (
               <button
-                key={c}
-                onClick={() => pickCat(c)}
-                className={`flex items-center gap-2 flex-shrink-0 px-3.5 py-2 rounded-full border text-[11px] tracking-luxe uppercase transition-all duration-150 ${
-                  isActive
-                    ? "bg-luxe-black text-luxe-bone border-luxe-black shadow-gold"
-                    : "bg-luxe-bone/95 backdrop-blur text-luxe-black border-luxe-line hover:border-luxe-gold/50"
-                }`}
+                onClick={() => setFilterOpen((o) => !o)}
+                className="flex items-center gap-2 px-3.5 py-2 rounded-full border bg-luxe-bone/95 backdrop-blur text-luxe-black border-luxe-line hover:border-luxe-gold/60 text-[11px] tracking-luxe uppercase shadow-soft"
               >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{t(`categories.${c}`)}</span>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${isActive ? "bg-luxe-bone/20" : "bg-luxe-line/60"}`}>
-                  {counts[c] ?? 0}
-                </span>
+                <ActiveIcon className="w-3.5 h-3.5" />
+                <span>{t(`categories.${active}`)}{sub ? ` · ${subLabel(sub)}` : ""}</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-luxe-line/60">{counts[active] ?? 0}</span>
+                <svg viewBox="0 0 24 24" className={`w-3 h-3 transition-transform ${filterOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
               </button>
             );
-          })}
+          })()}
+          {filterOpen && (
+            <div className="absolute top-full mt-2 left-0 z-[1001] w-[260px] max-h-[70vh] overflow-y-auto bg-luxe-bone border border-luxe-line rounded-sm shadow-xl">
+              <div className="px-3 py-2 border-b border-luxe-line text-[10px] tracking-luxe uppercase text-luxe-muted">
+                {locale === "en" ? "Category" : "Categoría"}
+              </div>
+              {CATS.map((c) => {
+                const Icon = CAT_ICONS[c];
+                const isActive = active === c;
+                return (
+                  <button key={c} onClick={() => { pickCat(c); if (c === "all" || c === "estancias") setFilterOpen(false); }}
+                    className={`w-full flex items-center gap-2 px-3 py-2.5 text-[11px] tracking-luxe uppercase transition-colors border-b border-luxe-line/50 ${
+                      isActive ? "bg-luxe-black text-luxe-bone" : "text-luxe-black hover:bg-luxe-cream"
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span className="flex-1 text-left">{t(`categories.${c}`)}</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${isActive ? "bg-luxe-bone/20" : "bg-luxe-line/60"}`}>
+                      {counts[c] ?? 0}
+                    </span>
+                  </button>
+                );
+              })}
+              {subcats.length > 0 && (
+                <>
+                  <div className="px-3 py-2 border-b border-luxe-line text-[10px] tracking-luxe uppercase text-luxe-muted bg-luxe-cream/50">
+                    {locale === "en" ? "Subcategory" : "Subcategoría"}
+                  </div>
+                  <button onClick={() => { setSub(null); setFilterOpen(false); }}
+                    className={`w-full text-left px-3 py-2 text-[10px] tracking-luxe uppercase border-b border-luxe-line/50 ${
+                      sub === null ? "bg-luxe-gold text-luxe-black" : "text-luxe-muted hover:bg-luxe-cream"
+                    }`}>
+                    {locale === "en" ? "All" : "Todas"}
+                  </button>
+                  {subcats.map((s) => (
+                    <button key={s} onClick={() => { setSub(s); setFilterOpen(false); }}
+                      className={`w-full text-left px-3 py-2 text-[10px] tracking-luxe uppercase border-b border-luxe-line/50 ${
+                        sub === s ? "bg-luxe-gold text-luxe-black" : "text-luxe-muted hover:bg-luxe-cream"
+                      }`}>
+                      {subLabel(s)}
+                    </button>
+                  ))}
+                </>
+              )}
+            </div>
+          )}
         </div>
-
-        {subcats.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto scrollbar-thin -mx-1 px-1 pb-1">
-            <button
-              onClick={() => setSub(null)}
-              className={`flex-shrink-0 px-3 py-1 rounded-full text-[10px] tracking-luxe uppercase transition-colors ${
-                sub === null ? "bg-luxe-gold text-luxe-black" : "bg-luxe-bone/95 backdrop-blur border border-luxe-line text-luxe-muted hover:text-luxe-black"
-              }`}
-            >
-              {locale === "en" ? "All" : "Todas"}
-            </button>
-            {subcats.map((s) => (
-              <button
-                key={s}
-                onClick={() => setSub(s)}
-                className={`flex-shrink-0 px-3 py-1 rounded-full text-[10px] tracking-luxe uppercase transition-colors ${
-                  sub === s ? "bg-luxe-gold text-luxe-black" : "bg-luxe-bone/95 backdrop-blur border border-luxe-line text-luxe-muted hover:text-luxe-black"
-                }`}
-              >
-                {subLabel(s)}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
       <div className="absolute inset-0">
