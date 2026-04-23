@@ -18,14 +18,16 @@ export async function middleware(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const path = req.nextUrl.pathname;
   const isAdmin = path.startsWith("/admin");
-  const isLogin = path === "/admin/login";
+  const isAdminLogin = path === "/admin/login";
+  const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
+  const isAdminUser = !!user && !!adminEmail && user.email?.toLowerCase() === adminEmail;
 
-  if (isAdmin && !isLogin && !user) {
+  if (isAdmin && !isAdminLogin && !isAdminUser) {
     const url = req.nextUrl.clone();
     url.pathname = "/admin/login";
     return NextResponse.redirect(url);
   }
-  if (isLogin && user) {
+  if (isAdminLogin && isAdminUser) {
     const url = req.nextUrl.clone();
     url.pathname = "/admin";
     return NextResponse.redirect(url);

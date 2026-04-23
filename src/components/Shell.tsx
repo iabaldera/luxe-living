@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import LocaleSwitcher from "./LocaleSwitcher";
+import AccountButton from "./AccountButton";
 
 const NAV = [
   { href: "/", key: "home", icon: HomeIcon },
@@ -56,7 +57,8 @@ export default function Shell({ children, logoUrl, brand }: { children: React.Re
             );
           })}
         </nav>
-        <div className="mt-auto">
+        <div className="mt-auto flex items-center gap-3">
+          <AccountButton />
           <LocaleSwitcher />
         </div>
       </aside>
@@ -67,7 +69,10 @@ export default function Shell({ children, logoUrl, brand }: { children: React.Re
             <Link href="/" className="flex items-center gap-2 font-serif text-lg tracking-wide">
               {logoUrl ? <img src={logoUrl} alt={brandName} className="max-h-7 w-auto object-contain" /> : brandName}
             </Link>
-            <LocaleSwitcher compact />
+            <div className="flex items-center gap-2">
+              <AccountButton compact />
+              <LocaleSwitcher compact />
+            </div>
           </header>
         )}
         <div className="animate-fade-in">{children}</div>

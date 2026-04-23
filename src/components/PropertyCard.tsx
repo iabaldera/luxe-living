@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import type { PropertyRow } from "@/lib/supabase/types";
+import SaveButton from "./SaveButton";
 
 export default function PropertyCard({ p }: { p: PropertyRow }) {
   const locale = useLocale();
@@ -14,8 +15,11 @@ export default function PropertyCard({ p }: { p: PropertyRow }) {
   return (
     <Link
       href={`/propiedades/${p.slug}`}
-      className="group block bg-white border border-luxe-line rounded-sm overflow-hidden transition-all duration-200 ease-luxe hover:border-luxe-gold/50 hover:shadow-gold"
+      className="group block bg-white border border-luxe-line rounded-sm overflow-hidden transition-all duration-200 ease-luxe hover:border-luxe-gold/50 hover:shadow-gold relative"
     >
+      <div className="absolute top-3 right-3 z-10">
+        <SaveButton propertyId={p.id} />
+      </div>
       {cover && (
         <div
           className="h-56 w-full bg-luxe-cream bg-cover bg-center transition-transform duration-500 ease-luxe group-hover:scale-[1.02]"
