@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/browser";
 import type { PropertyRow } from "@/lib/supabase/types";
 import LocationPicker from "./LocationPicker";
 import PhotoUploader from "./PhotoUploader";
+import MapIconPicker from "./MapIconPicker";
 import { AMENITY_CATALOG, AMENITY_GROUPS, AMENITY_MAP, amenityIcon, amenityLabel } from "@/lib/amenityCatalog";
 
 const TIPOS = ["apartamento", "penthouse", "estudio", "villa", "casa", "loft", "suite"];
@@ -311,38 +312,14 @@ export default function PropertyEditor({ initial }: { initial?: PropertyRow }) {
         </Section>
 
         <Section title="Icono del mapa">
-          <p className="text-xs text-luxe-muted">Personaliza el pin de esta propiedad en el mapa. Deja vacío para usar el diseño por defecto.</p>
-          <div className="flex items-center gap-4">
-            <div className="shrink-0 w-14 h-14 rounded-full flex items-center justify-center text-2xl border-2" style={{ background: p.icono_color || "#F8F5F0", borderColor: "#C9A96E" }}>
-              {p.icono && /^https?:\/\//i.test(p.icono) ? <img src={p.icono} alt="" className="w-10 h-10 rounded-full object-cover" /> : <span>{p.icono || "🏡"}</span>}
-            </div>
-            <div className="flex-1 space-y-3">
-              <Input label="Emoji o URL de imagen" value={p.icono ?? ""} onChange={(v) => set("icono", v)} />
-              <IconUploadProp onUploaded={(url) => set("icono", url)} />
-              <div className="flex flex-wrap gap-1.5">
-                {ICON_PRESETS_PROP.map((e) => (
-                  <button key={e} type="button" onClick={() => set("icono", e)}
-                    className="w-9 h-9 rounded-sm border border-luxe-line hover:border-luxe-gold bg-luxe-bone text-lg">{e}</button>
-                ))}
-                <button type="button" onClick={() => set("icono", "")}
-                  className="px-2 h-9 rounded-sm border border-luxe-line hover:border-luxe-gold bg-luxe-bone text-[10px] tracking-luxe uppercase text-luxe-muted">Limpiar</button>
-              </div>
-            </div>
-          </div>
-          <div>
-            <span className="text-[11px] tracking-luxe uppercase text-luxe-muted">Color de fondo</span>
-            <div className="mt-1.5 flex items-center gap-2 flex-wrap">
-              {COLOR_PRESETS_PROP.map((c) => (
-                <button key={c} type="button" onClick={() => set("icono_color", c)}
-                  className={`w-8 h-8 rounded-full border-2 ${p.icono_color === c ? "border-luxe-black" : "border-luxe-line"}`}
-                  style={{ background: c }} />
-              ))}
-              <input type="color" value={p.icono_color || "#F8F5F0"} onChange={(e) => set("icono_color", e.target.value)}
-                className="w-10 h-8 rounded-sm border border-luxe-line cursor-pointer" />
-              <button type="button" onClick={() => set("icono_color", "")}
-                className="px-2 h-8 rounded-sm border border-luxe-line hover:border-luxe-gold text-[10px] tracking-luxe uppercase text-luxe-muted">Por defecto</button>
-            </div>
-          </div>
+          <p className="text-xs text-luxe-muted">Por defecto el pin muestra la primera foto en miniatura. Personaliza con figura, emoji, PNG o URL.</p>
+          <MapIconPicker
+            value={p.icono ?? ""}
+            color={p.icono_color ?? ""}
+            defaultColor="#F8F5F0"
+            onChange={(v) => set("icono", v)}
+            onColorChange={(c) => set("icono_color", c)}
+          />
         </Section>
 
         <Section title="Fotos">
