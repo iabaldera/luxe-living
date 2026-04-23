@@ -104,13 +104,21 @@ export default function PropertyGallery({
 
       {tourOpen && (
         <div className="fixed inset-0 z-[9999] bg-luxe-bone animate-fade-in overflow-y-auto">
-          <header className="sticky top-0 z-30 bg-luxe-bone/95 backdrop-blur border-b border-luxe-line">
-            <div className="flex items-center justify-between px-4 md:px-8 py-4">
-              <button onClick={() => setTourOpen(false)} className="flex items-center gap-2 text-luxe-black hover:text-luxe-gold-deep transition-colors">
+          <button
+            onClick={() => setTourOpen(false)}
+            aria-label="Cerrar galería"
+            className="fixed top-3 right-3 z-[10001] w-11 h-11 rounded-full bg-luxe-black/85 backdrop-blur text-luxe-bone border border-luxe-gold/40 shadow-xl flex items-center justify-center hover:bg-luxe-gold hover:text-luxe-black transition-colors"
+          >
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+          <header className="sticky top-0 z-[10000] bg-luxe-bone/95 backdrop-blur border-b border-luxe-line">
+            <div className="flex items-center justify-between gap-3 px-4 md:px-8 py-4">
+              <button onClick={() => setTourOpen(false)} className="flex items-center gap-2 text-luxe-black hover:text-luxe-gold-deep transition-colors text-xs tracking-luxe uppercase">
                 <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M15 6l-6 6 6 6"/></svg>
+                <span className="hidden sm:inline">Volver</span>
               </button>
-              <h2 className="font-serif text-base md:text-lg text-luxe-black">Recorrido fotográfico</h2>
-              <span className="text-xs tracking-luxe uppercase text-luxe-muted">{fotos.length} fotos</span>
+              <h2 className="font-serif text-base md:text-lg text-luxe-black truncate">Recorrido fotográfico</h2>
+              <span className="text-xs tracking-luxe uppercase text-luxe-muted pr-12 md:pr-0">{fotos.length} fotos</span>
             </div>
             {groups.length > 1 && (
               <div className="flex gap-3 overflow-x-auto scrollbar-thin px-4 md:px-8 pb-4">
