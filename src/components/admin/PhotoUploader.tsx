@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/browser";
 
 const BUCKET = "luxe-media";
 const MAX_PHOTOS = 30;
-const CAT_SUGGESTIONS = ["Sala", "Cocina", "Habitación", "Baño", "Terraza", "Piscina", "Exterior", "Comedor", "Vista"];
+const ZONES = ["Sala", "Cocina", "Comedor", "Habitación", "Habitación principal", "Baño", "Terraza", "Balcón", "Piscina", "Exterior", "Vista", "Área de trabajo", "Lavandería"];
 
 export default function PhotoUploader({
   folder, values, categorias = [], onChange, onCategoriasChange, max = MAX_PHOTOS,
@@ -145,15 +145,37 @@ export default function PhotoUploader({
                   ×
                 </button>
               </div>
-              {onCategoriasChange && (
-                <input
-                  list="foto-cat-suggestions"
-                  value={catList[i] ?? ""}
-                  onChange={(e) => updateCat(i, e.target.value)}
-                  placeholder="Categoría…"
-                  className="mt-1 w-full bg-luxe-bone border border-luxe-line rounded-sm px-2 py-1 text-xs focus:outline-none focus:border-luxe-gold"
-                />
-              )}
+              {onCategoriasChange && (() => {
+                const cur = catList[i] ?? "";
+                const isCustom = cur && !ZONES.includes(cur);
+                return (
+                  <div className="mt-1.5 space-y-1">
+                    <select
+                      value={isCustom ? "__custom__" : cur}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === "__custom__") updateCat(i, cur || " ");
+                        else updateCat(i, v);
+                      }}
+                      className={`w-full rounded-sm px-2 py-1.5 text-xs focus:outline-none focus:border-luxe-gold border ${
+                        cur ? "bg-luxe-gold/20 border-luxe-gold/60 text-luxe-black font-medium" : "bg-luxe-bone border-luxe-line text-luxe-muted"
+                      }`}
+                    >
+                      <option value="">— Sin zona —</option>
+                      {ZONES.map((z) => <option key={z} value={z}>{z}</option>)}
+                      <option value="__custom__">Otra…</option>
+                    </select>
+                    {isCustom && (
+                      <input
+                        value={cur}
+                        onChange={(e) => updateCat(i, e.target.value)}
+                        placeholder="Zona personalizada"
+                        className="w-full bg-luxe-bone border border-luxe-line rounded-sm px-2 py-1 text-xs focus:outline-none focus:border-luxe-gold"
+                      />
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           );
         })}
@@ -165,13 +187,30 @@ export default function PhotoUploader({
           </label>
         )}
       </div>
-      <datalist id="foto-cat-suggestions">
-        {CAT_SUGGESTIONS.map((c) => <option key={c} value={c} />)}
-      </datalist>
       {err && <p className="mt-3 text-sm text-red-600">{err}</p>}
       <p className="mt-3 text-xs text-luxe-muted">
-        {values.length}/{max} fotos · Agrupa por categoría (Sala, Habitación…) para el recorrido estilo Airbnb. Arrastra para reordenar.
+        {values.length}/{max} fotos · Asigna una <span className="text-luxe-gold-deep">zona</span> a cada foto (Sala, Cocina, Habitación…) para el recorrido estilo Airbnb. Arrastra para reordenar.
       </p>
+      {onCategoriasChange && catList.some(Boolean) && (
+        <div className="mt-4 p-4 bg-luxe-bone/60 border border-luxe-line rounded-sm">
+          <p className="text-[10px] tracking-luxe uppercase text-luxe-gold-deep mb-2">Resumen por zona</p>
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(
+              catList.reduce((acc, c) => {
+                const k = c || "Sin zona";
+                acc[k] = (acc[k] ?? 0) + 1;
+                return acc;
+              }, {} as Record<string, number>)
+            ).map(([z, n]) => (
+              <span key={z} className={`text-[10px] tracking-luxe uppercase px-2 py-1 rounded-full border ${
+                z === "Sin zona" ? "border-luxe-line text-luxe-muted" : "border-luxe-gold/50 text-luxe-black bg-luxe-gold/10"
+              }`}>
+                {z} · {n}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
