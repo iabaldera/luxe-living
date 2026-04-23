@@ -17,30 +17,27 @@ function makeIcon(color: string, isProperty = false, custom?: { icono?: string |
   const size = isProperty ? 42 : 36;
   const stroke = isProperty ? "#C9A96E" : "#0A0A0A";
 
-  let html: string;
-  if (raw) {
-    const inner = isImg
-      ? `<img src="${escapeAttr(raw)}" alt="" style="width:70%;height:70%;object-fit:contain;pointer-events:none;" />`
-      : `<span style="font-size:${Math.round(size * 0.55)}px;line-height:1;">${escapeHtml(raw)}</span>`;
-    html = `<div class="luxe-pin" style="width:${size}px;height:${size}px;background:${fill};border:2px solid ${stroke};border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,0.35);position:relative;">
-      ${inner}
-      <span style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%) rotate(45deg);width:10px;height:10px;background:${fill};border-right:2px solid ${stroke};border-bottom:2px solid ${stroke};"></span>
-    </div>`;
-  } else {
-    const svg = isProperty
-      ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 40" width="34" height="42">
-          <path d="M16 0C8 0 2 6 2 14c0 10 14 26 14 26s14-16 14-26c0-8-6-14-14-14z" fill="${fill}" stroke="#C9A96E" stroke-width="2"/>
-          <path d="M10 16l6-5 6 5v7a1 1 0 0 1-1 1h-3v-4h-4v4h-3a1 1 0 0 1-1-1z" fill="#0A0A0A"/>
-        </svg>`
-      : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" width="28" height="36">
-          <path d="M12 0C6 0 2 4 2 10c0 7 10 22 10 22s10-15 10-22c0-6-4-10-10-10z" fill="${fill}" stroke="#0A0A0A" stroke-width="1"/>
-          <circle cx="12" cy="10" r="3.2" fill="#0A0A0A"/>
-        </svg>`;
-    html = svg;
-  }
+  const inner = raw
+    ? (isImg
+        ? `<img src="${escapeAttr(raw)}" alt="" style="width:62%;height:62%;object-fit:contain;pointer-events:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.25));" />`
+        : `<span style="font-size:${Math.round(size * 0.48)}px;line-height:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,0.25));">${escapeHtml(raw)}</span>`)
+    : (isProperty
+        ? `<svg viewBox="0 0 24 24" width="${Math.round(size * 0.5)}" height="${Math.round(size * 0.5)}" fill="none" stroke="#C9A96E" stroke-width="1.4"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-5h-6v5H5a1 1 0 0 1-1-1z"/></svg>`
+        : `<span style="width:8px;height:8px;border-radius:50%;background:#C9A96E;box-shadow:0 0 0 2px rgba(201,169,110,0.25);"></span>`);
 
-  const w = raw ? size : (isProperty ? 34 : 28);
-  const h = raw ? size + 8 : (isProperty ? 42 : 36);
+  const pinFill = raw ? fill : (isProperty ? "#0A0A0A" : "#141414");
+  const border = isProperty ? "#C9A96E" : "#C9A96E";
+
+  const html = `<div class="luxe-pin" style="position:relative;width:${size}px;height:${size + 10}px;">
+    <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);width:${size}px;height:${size}px;border-radius:50%;background:${pinFill};border:1.5px solid ${border};display:flex;align-items:center;justify-content:center;box-shadow:0 6px 14px -4px rgba(0,0,0,0.45),0 2px 4px rgba(0,0,0,0.25),inset 0 0 0 3px rgba(255,255,255,0.04);">
+      ${inner}
+    </div>
+    <div style="position:absolute;bottom:4px;left:50%;transform:translateX(-50%) rotate(45deg);width:10px;height:10px;background:${pinFill};border-right:1.5px solid ${border};border-bottom:1.5px solid ${border};box-shadow:2px 2px 4px -1px rgba(0,0,0,0.3);"></div>
+    <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:14px;height:4px;border-radius:50%;background:rgba(0,0,0,0.25);filter:blur(2px);"></div>
+  </div>`;
+
+  const w = size;
+  const h = size + 10;
   return L.divIcon({
     html,
     className: "luxe-marker",
@@ -107,8 +104,9 @@ export default function LeafletMap({
       .leaflet-control-attribution { background: rgba(20,20,20,0.7) !important; color: #8a8a8a !important; font-size: 10px !important; }
       .leaflet-control-attribution a { color: #C9A96E !important; }
       .leaflet-control-zoom a { background: #141414 !important; color: #C9A96E !important; border-color: #2a2a2a !important; }
-      .luxe-marker { transition: transform 180ms cubic-bezier(0.22,1,0.36,1); }
-      .luxe-marker:hover { transform: translateY(-2px) scale(1.06); z-index: 1000 !important; }
+      .luxe-marker { transition: transform 220ms cubic-bezier(0.22,1,0.36,1); }
+      .luxe-marker:hover { transform: translateY(-3px) scale(1.08); z-index: 1000 !important; }
+      .luxe-marker:hover .luxe-pin > div:first-child { box-shadow: 0 10px 22px -6px rgba(201,169,110,0.55), 0 4px 8px rgba(0,0,0,0.3), inset 0 0 0 3px rgba(201,169,110,0.15); }
       .luxe-popup-img { width: 100%; height: 120px; background-size: cover; background-position: center; background-color: #2a2a2a; }
       .luxe-popup-body { padding: 12px 14px 14px; }
     `;
