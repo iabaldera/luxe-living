@@ -8,6 +8,19 @@ export default function PropertyGallery({
 }: { fotos: string[]; categorias?: string[]; alt: string }) {
   const [broken, setBroken] = useState<Set<string>>(new Set());
   const markBroken = (url: string) => setBroken((s) => { if (s.has(url)) return s; const n = new Set(s); n.add(url); return n; });
+
+  useEffect(() => {
+    const pending = fotos.map((u) => (u || "").trim()).filter((u) => u && !broken.has(u));
+    const imgs: HTMLImageElement[] = [];
+    pending.forEach((u) => {
+      const img = new Image();
+      img.onerror = () => markBroken(u);
+      img.src = u;
+      imgs.push(img);
+    });
+    return () => { imgs.forEach((i) => { i.onerror = null; i.src = ""; }); };
+  }, [fotos.join("|")]);
+
   const photos: Photo[] = fotos
     .map((url, i) => ({ url: (url || "").trim(), cat: (categorias[i] || "").trim() }))
     .filter((p) => p.url && !broken.has(p.url));
@@ -56,11 +69,6 @@ export default function PropertyGallery({
 
   return (
     <>
-      <div aria-hidden className="hidden">
-        {fotos.filter((u) => u && !broken.has(u.trim())).map((u) => (
-          <img key={u} src={u} alt="" onError={() => markBroken(u.trim())} />
-        ))}
-      </div>
       <div className="relative grid grid-cols-4 grid-rows-2 gap-2 mb-10 animate-scale-in rounded-sm overflow-hidden">
         <button
           type="button"
@@ -142,7 +150,7 @@ export default function PropertyGallery({
                     <button
                       key={p.url + i}
                       onClick={() => openAt(p.url)}
-                      className={`bg-luxe-cream bg-cover bg-center rounded-sm transition-transform duration-300 hover:scale-[1.01] overflow-hidden ${
+                      className={`bg-cover bg-center rounded-sm transition-transform duration-300 hover:scale-[1.01] overflow-hidden ${
                         i === 0 && g.items.length > 1 ? "sm:col-span-2 aspect-[16/10]" : "aspect-[4/3]"
                       }`}
                       style={{ backgroundImage: `url('${p.url}')` }}
