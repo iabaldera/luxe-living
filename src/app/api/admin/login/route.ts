@@ -5,22 +5,29 @@ import { createClient } from "@/lib/supabase/server";
 // Admins predefinidos. Cada uno se auto-provisiona como usuario Supabase con role=admin.
 // Los 3 primeros entran con "Usuario / PIN"; el último con "Correo / Clave".
 type Admin = { user?: string; pin?: string; email: string; password: string };
+// Unificamos emails: cada admin tiene UN usuario Supabase, accesible por PIN o por correo directo.
 const ADMINS: Admin[] = [
-  { user: "nailea", pin: "2812", email: "nailea@luxeliving.do", password: "nailea-2812-admin" },
-  { user: "mariela", pin: "2812", email: "mariela@luxeliving.do", password: "mariela-2812-admin" },
-  { user: "esther", pin: "2812", email: "esther@luxeliving.do", password: "esther-2812-admin" },
-  { user: "admin", pin: "admin1234", email: "admin@luxeliving.do", password: "admin-admin1234" },
-  { email: "nailea@luxeliving.do", password: "nailea2026" },
+  { user: "nailea", pin: "2812", email: "nailea@luxeliving.do", password: "nailea2026" },
+  { user: "mariela", pin: "2812", email: "mariela@luxeliving.do", password: "mariela2026" },
+  { user: "esther", pin: "2812", email: "esther@luxeliving.do", password: "esther2026" },
+  { user: "admin", pin: "admin1234", email: "admin@luxeliving.do", password: "admin1234luxe" },
 ];
 
 async function ensureSupabaseUser(url: string, serviceKey: string, email: string, password: string) {
   const adminApi = createAdminClient(url, serviceKey, { auth: { persistSession: false } });
+  const { data: list } = await adminApi.auth.admin.listUsers({ page: 1, perPage: 200 });
+  const existing = list?.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
+  if (existing) {
+    const { error } = await adminApi.auth.admin.updateUserById(existing.id, {
+      password, email_confirm: true, user_metadata: { ...(existing.user_metadata || {}), role: "admin" },
+    });
+    if (error) throw new Error(error.message);
+    return;
+  }
   const { error } = await adminApi.auth.admin.createUser({
     email, password, email_confirm: true, user_metadata: { role: "admin" },
   });
-  if (error && !/registered|exists|already/i.test(error.message)) {
-    throw new Error(error.message);
-  }
+  if (error && !/registered|exists|already/i.test(error.message)) throw new Error(error.message);
 }
 
 export async function POST(req: Request) {
