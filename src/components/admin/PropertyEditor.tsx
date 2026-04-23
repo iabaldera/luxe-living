@@ -27,6 +27,7 @@ export default function PropertyEditor({ initial }: { initial?: PropertyRow }) {
   const [p, setP] = useState<Partial<PropertyRow>>({ ...blank, ...(initial ?? {}) });
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
   const [amenityQuery, setAmenityQuery] = useState("");
   const [customAmenity, setCustomAmenity] = useState("");
   const [destacado, setDestacado] = useState("");
@@ -90,7 +91,11 @@ export default function PropertyEditor({ initial }: { initial?: PropertyRow }) {
       : await supabase.from("properties").insert(payload).select().single();
     setSaving(false);
     if (error) return setErr(error.message);
-    router.push(`/admin/propiedades/${data!.id}`);
+    setSavedAt(Date.now());
+    setTimeout(() => setSavedAt((t) => (t && Date.now() - t >= 3000 ? null : t)), 3200);
+    if (!initial) {
+      router.push(`/admin/propiedades/${data!.id}`);
+    }
     router.refresh();
   }
 
@@ -124,6 +129,13 @@ export default function PropertyEditor({ initial }: { initial?: PropertyRow }) {
       </div>
 
       {err && <p className="mt-4 text-sm text-red-600">{err}</p>}
+
+      {savedAt && (
+        <div className="fixed bottom-6 right-6 z-[9998] bg-luxe-black text-luxe-bone px-5 py-3 rounded-sm shadow-gold flex items-center gap-3 animate-slide-up">
+          <span className="w-6 h-6 rounded-full bg-luxe-gold text-luxe-black flex items-center justify-center text-sm">✓</span>
+          <span className="text-xs tracking-luxe uppercase">Propiedad guardada</span>
+        </div>
+      )}
 
       <div className="mt-8 grid gap-8">
         <Section title="Identificación">
@@ -303,6 +315,26 @@ export default function PropertyEditor({ initial }: { initial?: PropertyRow }) {
             onCategoriasChange={(cats) => set("fotos_categorias", cats)}
           />
         </Section>
+
+        <div className="sticky bottom-4 bg-luxe-bone/95 backdrop-blur border border-luxe-line rounded-sm p-4 flex items-center justify-between gap-3 shadow-soft">
+          <p className="text-xs text-luxe-muted">
+            {err ? <span className="text-red-600">{err}</span> : savedAt ? "✓ Guardado" : "Cambios listos para guardar"}
+          </p>
+          <div className="flex gap-3">
+            {initial && (
+              <button onClick={remove} className="px-4 py-2 text-xs tracking-luxe uppercase text-red-600 hover:text-red-800">
+                Eliminar
+              </button>
+            )}
+            <button
+              onClick={save}
+              disabled={saving}
+              className="px-6 py-3 bg-luxe-black text-luxe-bone text-xs tracking-luxe uppercase hover:bg-luxe-gold hover:text-luxe-black transition-colors disabled:opacity-50 shadow-gold"
+            >
+              {saving ? "Guardando…" : "Guardar"}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
