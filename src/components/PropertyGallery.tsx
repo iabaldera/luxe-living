@@ -114,18 +114,24 @@ export default function PropertyGallery({
               <span className="text-[11px] tracking-luxe uppercase text-luxe-muted">{fotos.length} fotos</span>
             </div>
             {groups.length > 1 && (
-              <div className="flex gap-1.5 overflow-x-auto scrollbar-thin px-4 md:px-8 pb-2">
+              <div className="flex gap-2 overflow-x-auto scrollbar-thin px-4 md:px-8 pb-2">
                 {groups.map((g) => (
                   <button
                     key={g.cat}
                     onClick={() => scrollToCat(g.cat)}
-                    className={`flex-shrink-0 px-3 py-1.5 text-[11px] tracking-luxe uppercase rounded-full border transition-all ${
-                      activeCat === g.cat
-                        ? "bg-luxe-black text-luxe-bone border-luxe-black"
-                        : "bg-transparent text-luxe-muted border-luxe-line hover:border-luxe-black hover:text-luxe-black"
+                    className={`flex-shrink-0 flex flex-col items-start gap-1 transition-all ${
+                      activeCat === g.cat ? "opacity-100" : "opacity-70 hover:opacity-100"
                     }`}
                   >
-                    {g.cat}
+                    <div
+                      className={`w-16 h-12 md:w-20 md:h-14 bg-cover bg-center rounded-sm border-2 transition-colors ${
+                        activeCat === g.cat ? "border-luxe-black" : "border-transparent"
+                      }`}
+                      style={{ backgroundImage: `url('${g.items[0].url}')` }}
+                    />
+                    <span className={`text-[10px] tracking-luxe uppercase ${activeCat === g.cat ? "text-luxe-black border-b border-luxe-black pb-px" : "text-luxe-muted"}`}>
+                      {g.cat}
+                    </span>
                   </button>
                 ))}
               </div>
