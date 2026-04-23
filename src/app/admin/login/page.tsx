@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [pwd, setPwd] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [ok, setOk] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -25,10 +26,13 @@ export default function LoginPage() {
         body: JSON.stringify(payload),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) { setErr(data.error ?? "No se pudo iniciar sesión."); return; }
-      router.push("/admin");
-      router.refresh();
-    } finally { setLoading(false); }
+      if (!res.ok) { setErr(data.error ?? "No se pudo iniciar sesión."); setLoading(false); return; }
+      setOk(true);
+      window.location.href = "/admin";
+    } catch (e: any) {
+      setErr(e?.message ?? "Error de red.");
+      setLoading(false);
+    }
   }
 
   return (
@@ -77,9 +81,11 @@ export default function LoginPage() {
             </>
           )}
           {err && <p className="text-sm text-red-600">{err}</p>}
-          <button type="submit" disabled={loading}
-            className="w-full py-3 text-xs tracking-luxe uppercase bg-luxe-black text-luxe-bone hover:bg-luxe-gold hover:text-luxe-black transition-colors disabled:opacity-50">
-            {loading ? "Accediendo…" : "Entrar"}
+          {ok && <p className="text-sm text-luxe-gold-deep">✓ Sesión iniciada. Redirigiendo…</p>}
+          <button type="submit" disabled={loading || ok}
+            className="w-full py-3 text-xs tracking-luxe uppercase bg-luxe-black text-luxe-bone hover:bg-luxe-gold hover:text-luxe-black transition-colors disabled:opacity-70 flex items-center justify-center gap-2">
+            {loading && <span className="inline-block w-3 h-3 border-2 border-luxe-bone/40 border-t-luxe-gold rounded-full animate-spin" />}
+            {ok ? "✓ Conectado" : loading ? "Accediendo…" : "Entrar"}
           </button>
         </div>
       </form>
