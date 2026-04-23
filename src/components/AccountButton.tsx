@@ -59,7 +59,7 @@ export default function AccountButton({ compact = false }: { compact?: boolean }
         )}
       </button>
       {open && (
-        <div className="absolute right-0 lg:right-auto lg:left-0 bottom-full mb-2 z-50 min-w-[200px] bg-white border border-luxe-line rounded-sm shadow-soft overflow-hidden">
+        <div className="absolute right-0 lg:right-auto lg:left-0 top-full mt-2 z-50 min-w-[200px] bg-white border border-luxe-line rounded-sm shadow-soft overflow-hidden">
           {email ? (
             <>
               <div className="px-4 py-3 border-b border-luxe-line">
