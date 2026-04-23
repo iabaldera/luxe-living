@@ -3,6 +3,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import "./globals.css";
 import Shell from "@/components/Shell";
+import Toaster from "@/components/Toaster";
 import { getContact } from "@/lib/data";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -56,6 +57,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <NextIntlClientProvider messages={messages} locale={locale}>
           <Shell logoUrl={logo} brand={brand}>{children}</Shell>
+          <Toaster />
         </NextIntlClientProvider>
       </body>
     </html>

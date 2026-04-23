@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
+import { useToast } from "@/components/Toaster";
 
 export interface AdminUser {
   id: string;
@@ -92,15 +93,17 @@ export default function UsersClient({ users }: { users: AdminUser[] }) {
       {(editing || creating) && (
         <UserEditor
           user={editing}
-          onClose={() => { setEditing(null); setCreating(false); router.refresh(); }}
+          onClose={() => { setEditing(null); setCreating(false); }}
+          onSaved={() => { setEditing(null); setCreating(false); router.refresh(); }}
         />
       )}
     </>
   );
 }
 
-function UserEditor({ user, onClose }: { user: AdminUser | null; onClose: () => void }) {
+function UserEditor({ user, onClose, onSaved }: { user: AdminUser | null; onClose: () => void; onSaved: () => void }) {
   const supabase = createClient();
+  const toast = useToast();
   const isNew = !user;
   const m = user?.user_metadata || {};
   const [email, setEmail] = useState(user?.email ?? "");
@@ -135,8 +138,14 @@ function UserEditor({ user, onClose }: { user: AdminUser | null; onClose: () => 
     const res = await fetch(url, { ...opts, headers: { "Content-Type": "application/json" } });
     const data = await res.json().catch(() => ({}));
     setBusy(false);
-    if (!res.ok) { setErr(data.error ?? "Error guardando."); return; }
-    window.location.reload();
+    if (!res.ok) {
+      const msg = data.error ?? `Error ${res.status}`;
+      setErr(msg);
+      toast.push({ kind: "error", msg });
+      return;
+    }
+    toast.push({ kind: "success", msg: isNew ? "Usuario creado" : "Usuario actualizado" });
+    onSaved();
   }
 
   async function remove() {
@@ -150,8 +159,14 @@ function UserEditor({ user, onClose }: { user: AdminUser | null; onClose: () => 
     });
     const data = await res.json().catch(() => ({}));
     setBusy(false);
-    if (!res.ok) { setErr(data.error ?? "Error eliminando."); return; }
-    onClose();
+    if (!res.ok) {
+      const msg = data.error ?? "Error eliminando.";
+      setErr(msg);
+      toast.push({ kind: "error", msg });
+      return;
+    }
+    toast.push({ kind: "success", msg: "Usuario eliminado" });
+    onSaved();
   }
 
   return (
