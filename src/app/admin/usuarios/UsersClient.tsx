@@ -136,7 +136,7 @@ function UserEditor({ user, onClose }: { user: AdminUser | null; onClose: () => 
     const data = await res.json().catch(() => ({}));
     setBusy(false);
     if (!res.ok) { setErr(data.error ?? "Error guardando."); return; }
-    onClose();
+    window.location.reload();
   }
 
   async function remove() {
