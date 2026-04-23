@@ -118,7 +118,7 @@ export default function LeafletMap({
 
   return (
     <div className="relative h-full w-full">
-      <div className="absolute top-3 right-3 z-[402]">
+      <div className="absolute right-3 bottom-24 lg:bottom-3 z-[402]">
         <MapStyleSwitcher value={styleKey} onChange={setStyleKey} />
       </div>
     <MapContainer center={CENTER} zoom={14} style={{ height: "100%", width: "100%" }} zoomControl={false}>
