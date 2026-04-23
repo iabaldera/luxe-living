@@ -3,9 +3,10 @@
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { TILE_URL, TILE_ATTRIBUTION, categoryColor } from "@/lib/mapStyle";
+import { MAP_STYLES, DEFAULT_STYLE, categoryColor } from "@/lib/mapStyle";
+import MapStyleSwitcher from "./MapStyleSwitcher";
 import type { PlaceRow as Place, PropertyRow } from "@/lib/supabase/types";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const CENTER: [number, number] = [19.4517, -70.697];
 
@@ -43,6 +44,8 @@ export default function LeafletMap({
   locale: string;
   t: { openInMaps: string; cat: (k: string) => string; viewProperty?: string };
 }) {
+  const [styleKey, setStyleKey] = useState(DEFAULT_STYLE.key);
+  const style = MAP_STYLES.find((s) => s.key === styleKey) ?? DEFAULT_STYLE;
   useEffect(() => {
     const style = document.createElement("style");
     style.textContent = `
@@ -63,8 +66,12 @@ export default function LeafletMap({
   }, []);
 
   return (
+    <div className="relative h-full w-full">
+      <div className="absolute top-3 right-3 z-[402]">
+        <MapStyleSwitcher value={styleKey} onChange={setStyleKey} />
+      </div>
     <MapContainer center={CENTER} zoom={14} style={{ height: "100%", width: "100%" }} zoomControl={false}>
-      <TileLayer url={TILE_URL} attribution={TILE_ATTRIBUTION} subdomains={["a", "b", "c", "d"]} />
+      <TileLayer key={style.key} url={style.url} attribution={style.attribution} subdomains={style.subdomains ?? []} maxZoom={style.maxZoom} />
 
       {places.map((p) => (
         <Marker
@@ -138,5 +145,6 @@ export default function LeafletMap({
         );
       })}
     </MapContainer>
+    </div>
   );
 }
