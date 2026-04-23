@@ -20,9 +20,17 @@ export default function RulesEditor({ initial }: { initial: RuleRow[] }) {
 
   async function save(i: number) {
     const r = rows[i];
-    if (!r.clave || !r.titulo) { setErr("Clave y título son obligatorios."); return; }
     setErr(null); setSavingId(r.id ?? "new-" + i);
-    const payload = { ...r, orden: i };
+    const clave = r.clave || `regla-${Date.now()}-${i}`;
+    const payload = {
+      ...r,
+      clave,
+      titulo: r.titulo ?? "",
+      titulo_en: r.titulo_en ?? "",
+      descripcion: r.descripcion ?? "",
+      descripcion_en: r.descripcion_en ?? "",
+      orden: i,
+    };
     const { data, error } = r.id
       ? await supabase.from("rules").update(payload).eq("id", r.id).select().single()
       : await supabase.from("rules").insert(payload).select().single();

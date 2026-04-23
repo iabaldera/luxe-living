@@ -66,10 +66,19 @@ export default function PropertyEditor({ initial }: { initial?: PropertyRow }) {
 
   async function save() {
     setErr(null);
-    if (!p.slug || !p.nombre) { setErr("Slug y nombre son obligatorios."); return; }
     setSaving(true);
+    const autoSlug = (p.slug || p.nombre || "propiedad")
+      .toString().toLowerCase().trim()
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || `propiedad-${Date.now()}`;
     const payload = {
       ...p,
+      slug: autoSlug,
+      nombre: p.nombre || "Sin nombre",
+      nombre_en: p.nombre_en || p.nombre || "Untitled",
+      ubicacion: p.ubicacion ?? "",
+      ubicacion_en: p.ubicacion_en ?? "",
+      descripcion: p.descripcion ?? "",
+      descripcion_en: p.descripcion_en ?? "",
       precio_noche: Number(p.precio_noche) || 0,
       area_m2: p.area_m2 ? Number(p.area_m2) : null,
       camas: p.camas ? Number(p.camas) : null,
