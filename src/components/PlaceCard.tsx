@@ -25,10 +25,12 @@ export default function PlaceCard({
         compact ? "flex gap-3 p-3" : ""
       }`}
     >
-      <div
-        className={`${compact ? "w-20 h-20 flex-shrink-0" : "h-40 w-full"} bg-luxe-cream bg-cover bg-center`}
-        style={{ backgroundImage: `url('${place.foto ?? ""}')` }}
-      />
+      {place.foto && (
+        <div
+          className={`${compact ? "w-20 h-20 flex-shrink-0" : "h-40 w-full"} bg-luxe-cream bg-cover bg-center`}
+          style={{ backgroundImage: `url('${place.foto}')` }}
+        />
+      )}
       <div className={compact ? "flex-1 min-w-0" : "p-4"}>
         <p className="text-[10px] tracking-luxe uppercase text-luxe-gold-deep">{catLabel}</p>
         <h3 className="mt-1 font-serif text-base text-luxe-black truncate">{name}</h3>

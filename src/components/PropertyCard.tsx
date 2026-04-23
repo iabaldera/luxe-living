@@ -16,10 +16,12 @@ export default function PropertyCard({ p }: { p: PropertyRow }) {
       href={`/propiedades/${p.slug}`}
       className="group block bg-white border border-luxe-line rounded-sm overflow-hidden transition-all duration-200 ease-luxe hover:border-luxe-gold/50 hover:shadow-gold"
     >
-      <div
-        className="h-56 w-full bg-luxe-cream bg-cover bg-center transition-transform duration-500 ease-luxe group-hover:scale-[1.02]"
-        style={{ backgroundImage: `url('${cover}')` }}
-      />
+      {cover && (
+        <div
+          className="h-56 w-full bg-luxe-cream bg-cover bg-center transition-transform duration-500 ease-luxe group-hover:scale-[1.02]"
+          style={{ backgroundImage: `url('${cover}')` }}
+        />
+      )}
       <div className="p-5">
         <p className="text-[10px] tracking-luxe uppercase text-luxe-gold-deep">{ubicacion}</p>
         <h3 className="mt-1 font-serif text-xl text-luxe-black">{nombre}</h3>
