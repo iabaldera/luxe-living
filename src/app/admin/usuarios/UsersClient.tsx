@@ -193,6 +193,8 @@ function UserEditor({ user, onClose }: { user: AdminUser | null; onClose: () => 
             <select value={role} onChange={(e) => setRole(e.target.value)}
               className="mt-1.5 w-full bg-white border border-luxe-line rounded-sm px-3 py-2.5 text-sm focus:outline-none focus:border-luxe-gold">
               <option value="user">Huésped</option>
+              <option value="cohost">Co-host</option>
+              <option value="supervisor">Supervisor</option>
               <option value="admin">Administrador</option>
             </select>
           </label>
