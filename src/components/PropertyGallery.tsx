@@ -124,7 +124,7 @@ export default function PropertyGallery({
             {groups.map((g) => (
               <section
                 key={g.cat}
-                ref={(el) => { sectionRefs.current[g.cat] = el; }}
+                ref={(el: HTMLElement | null) => { sectionRefs.current[g.cat] = el as HTMLDivElement | null; }}
                 className="animate-slide-up"
               >
                 <h3 className="font-serif text-2xl md:text-3xl text-luxe-black mb-4">{g.cat}</h3>
