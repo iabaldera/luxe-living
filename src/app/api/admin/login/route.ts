@@ -4,8 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 export async function POST(req: Request) {
   const { user, pin } = await req.json().catch(() => ({ user: "", pin: "" }));
 
-  const ADMIN_USER = process.env.ADMIN_USER ?? "nailea";
-  const ADMIN_PIN = process.env.ADMIN_PIN ?? "2812";
+  const ADMIN_USER = process.env.ADMIN_USER ?? "admin";
+  const ADMIN_PIN = process.env.ADMIN_PIN ?? "admin1234";
   const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
   const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
