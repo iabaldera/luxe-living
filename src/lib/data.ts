@@ -3,7 +3,10 @@ import type { ContactSettings, PropertyRow, PlaceRow, RuleRow } from "@/lib/supa
 
 export async function getProperties(): Promise<PropertyRow[]> {
   const supabase = createClient();
-  const { data } = await supabase.from("properties").select("*").eq("activo", true).order("created_at", { ascending: false });
+  const { data } = await supabase.from("properties").select("*").eq("activo", true)
+    .order("destacada", { ascending: false })
+    .order("orden_destacado", { ascending: true, nullsFirst: false })
+    .order("created_at", { ascending: false });
   return (data ?? []) as PropertyRow[];
 }
 

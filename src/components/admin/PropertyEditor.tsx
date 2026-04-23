@@ -90,6 +90,8 @@ export default function PropertyEditor({ initial }: { initial?: PropertyRow }) {
       area_m2: p.area_m2 ? Number(p.area_m2) : null,
       camas: p.camas ? Number(p.camas) : null,
       min_noches: p.min_noches ? Number(p.min_noches) : null,
+      destacada: !!p.destacada,
+      orden_destacado: p.orden_destacado != null && p.orden_destacado !== undefined ? Number(p.orden_destacado) : null,
     };
     const { data, error } = initial
       ? await supabase.from("properties").update(payload).eq("id", initial.id).select().single()
@@ -147,6 +149,10 @@ export default function PropertyEditor({ initial }: { initial?: PropertyRow }) {
           <Grid2>
             <Input label="Slug (url)" value={p.slug ?? ""} onChange={(v) => set("slug", v)} />
             <Toggle label="Visible en el sitio" checked={!!p.activo} onChange={(v) => set("activo", v)} />
+          </Grid2>
+          <Grid2>
+            <Toggle label="Destacada en el inicio" checked={!!p.destacada} onChange={(v) => set("destacada", v)} />
+            <Input label="Orden destacado (1, 2, 3…)" type="number" value={p.orden_destacado != null ? String(p.orden_destacado) : ""} onChange={(v) => set("orden_destacado", v ? Number(v) : null)} placeholder="Menor = primero" />
           </Grid2>
           <Grid2>
             <Input label="Nombre (ES)" value={p.nombre ?? ""} onChange={(v) => set("nombre", v)} />

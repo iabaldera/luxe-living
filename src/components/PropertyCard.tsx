@@ -20,6 +20,12 @@ export default function PropertyCard({ p }: { p: PropertyRow }) {
       <div className="absolute top-3 right-3 z-10">
         <SaveButton propertyId={p.id} />
       </div>
+      {p.destacada && (
+        <div className="absolute top-3 left-3 z-10 flex items-center gap-1 px-2.5 py-1 bg-luxe-black/90 backdrop-blur text-luxe-gold border border-luxe-gold/50 text-[10px] tracking-luxe uppercase rounded-sm shadow-soft">
+          <svg viewBox="0 0 24 24" className="w-3 h-3" fill="currentColor"><path d="M12 2l3 7 7 .5-5.5 4.5 2 7-6.5-4-6.5 4 2-7L2 9.5 9 9z"/></svg>
+          <span>Destacada</span>
+        </div>
+      )}
       {cover && (
         <div
           className="h-56 w-full bg-luxe-cream bg-cover bg-center transition-transform duration-500 ease-luxe group-hover:scale-[1.02]"

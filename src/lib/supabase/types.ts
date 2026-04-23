@@ -36,6 +36,8 @@ export interface PropertyRow {
   booking_url?: string | null;
   icono?: string | null;
   icono_color?: string | null;
+  destacada?: boolean;
+  orden_destacado?: number | null;
 }
 
 export interface PlaceRow {
