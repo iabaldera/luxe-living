@@ -3,8 +3,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 import type { RuleRow } from "@/lib/supabase/types";
+import { RULE_ICONS, RULE_ICON_KEYS } from "@/lib/ruleIcons";
 
-const ICONOS = ["silencio", "huespedes", "mascotas", "fumar", "amenidades", "checkout"];
+const ICONOS = RULE_ICON_KEYS;
 
 export default function RulesEditor({ initial }: { initial: RuleRow[] }) {
   const supabase = createClient();
@@ -46,16 +47,23 @@ export default function RulesEditor({ initial }: { initial: RuleRow[] }) {
   return (
     <div className="space-y-4">
       {err && <p className="text-sm text-red-600">{err}</p>}
-      {rows.map((r, i) => (
-        <div key={r.id ?? `new-${i}`} className="bg-white border border-luxe-line rounded-sm p-5">
-          <div className="grid gap-3 md:grid-cols-4">
+      {rows.map((r, i) => {
+        const IconPreview = RULE_ICONS[r.icono ?? "silencio"] ?? RULE_ICONS.info;
+        return (
+        <div key={r.id ?? `new-${i}`} className="bg-white border border-luxe-line rounded-sm p-5 animate-slide-up transition-shadow hover:shadow-soft" style={{ animationDelay: `${i * 50}ms` }}>
+          <div className="grid gap-3 md:grid-cols-4 items-end">
             <Field label="Clave" value={r.clave ?? ""} onChange={(v) => update(i, { clave: v })} />
             <label className="block">
               <span className="text-[11px] tracking-luxe uppercase text-luxe-muted">Ícono</span>
-              <select value={r.icono ?? "silencio"} onChange={(e) => update(i, { icono: e.target.value })}
-                className="mt-1.5 w-full bg-luxe-bone border border-luxe-line rounded-sm px-3 py-2.5 text-sm focus:outline-none focus:border-luxe-gold">
-                {ICONOS.map((x) => <option key={x} value={x}>{x}</option>)}
-              </select>
+              <div className="mt-1.5 flex items-center gap-2">
+                <span className="w-10 h-10 flex-shrink-0 flex items-center justify-center border border-luxe-gold/60 rounded-full text-luxe-gold-deep">
+                  <IconPreview className="w-5 h-5" />
+                </span>
+                <select value={r.icono ?? "silencio"} onChange={(e) => update(i, { icono: e.target.value })}
+                  className="flex-1 bg-luxe-bone border border-luxe-line rounded-sm px-3 py-2.5 text-sm focus:outline-none focus:border-luxe-gold">
+                  {ICONOS.map((x) => <option key={x} value={x}>{x}</option>)}
+                </select>
+              </div>
             </label>
             <Field label="Título (ES)" value={r.titulo ?? ""} onChange={(v) => update(i, { titulo: v })} />
             <Field label="Título (EN)" value={r.titulo_en ?? ""} onChange={(v) => update(i, { titulo_en: v })} />
@@ -78,7 +86,8 @@ export default function RulesEditor({ initial }: { initial: RuleRow[] }) {
             </div>
           </div>
         </div>
-      ))}
+        );
+      })}
       <button onClick={add} className="w-full py-4 border-2 border-dashed border-luxe-line rounded-sm text-xs tracking-luxe uppercase text-luxe-muted hover:text-luxe-gold hover:border-luxe-gold">
         + Agregar regla
       </button>
