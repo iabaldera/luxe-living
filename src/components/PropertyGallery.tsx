@@ -103,11 +103,11 @@ export default function PropertyGallery({
       </div>
 
       {tourOpen && (
-        <div className="fixed inset-0 z-[9999] bg-luxe-bone animate-fade-in overflow-y-auto">
+        <div className="fixed inset-0 z-[9999] bg-luxe-bone animate-fade-in overflow-y-auto pt-16 lg:pt-0">
           <button
             onClick={() => setTourOpen(false)}
             aria-label="Cerrar galería"
-            className="fixed top-3 right-3 z-[10001] w-11 h-11 rounded-full bg-luxe-black/85 backdrop-blur text-luxe-bone border border-luxe-gold/40 shadow-xl flex items-center justify-center hover:bg-luxe-gold hover:text-luxe-black transition-colors"
+            className="fixed top-[72px] lg:top-3 right-3 z-[10001] w-11 h-11 rounded-full bg-luxe-black/85 backdrop-blur text-luxe-bone border border-luxe-gold/40 shadow-xl flex items-center justify-center hover:bg-luxe-gold hover:text-luxe-black transition-colors"
           >
             <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
           </button>
