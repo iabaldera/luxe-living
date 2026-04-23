@@ -20,8 +20,15 @@ export async function middleware(req: NextRequest) {
   const isAdmin = path.startsWith("/admin");
   const isAdminLogin = path === "/admin/login";
   const ADMIN_USER = process.env.ADMIN_USER ?? "admin";
-  const adminEmail = (process.env.ADMIN_EMAIL ?? `${ADMIN_USER.toLowerCase()}@luxeliving.app`).toLowerCase();
-  const isAdminUser = !!user && user.email?.toLowerCase() === adminEmail;
+  const derivedAdminEmail = (process.env.ADMIN_EMAIL ?? `${ADMIN_USER.toLowerCase()}@luxeliving.app`).toLowerCase();
+  const extraEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+  const role = (user?.user_metadata as any)?.role;
+  const email = user?.email?.toLowerCase();
+  const isAdminUser = !!user && (
+    role === "admin" ||
+    email === derivedAdminEmail ||
+    (email && extraEmails.includes(email))
+  );
 
   if (isAdmin && !isAdminLogin && !isAdminUser) {
     const url = req.nextUrl.clone();
