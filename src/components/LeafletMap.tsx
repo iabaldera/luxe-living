@@ -129,7 +129,7 @@ export default function LeafletMap({
 
       {places.map((p) => (
         <Marker
-          key={`place-${p.id}`}
+          key={`place-${p.id}-${p.icono ?? ""}-${p.icono_color ?? ""}`}
           position={[p.lat, p.lng]}
           icon={makeIcon(categoryColor[p.categoria], false, { icono: p.icono, color: p.icono_color })}
           eventHandlers={{ click: () => onSelect(p) }}
@@ -165,7 +165,7 @@ export default function LeafletMap({
         const cover = p.fotos?.[0];
         return (
           <Marker
-            key={`prop-${p.id}`}
+            key={`prop-${p.id}-${p.icono ?? ""}-${p.icono_color ?? ""}-${cover ?? ""}`}
             position={[p.lat as number, p.lng as number]}
             icon={makeIcon(categoryColor.estancias, true, { icono: p.icono || cover || null, color: p.icono_color, isPhoto: !p.icono && !!cover })}
           >
