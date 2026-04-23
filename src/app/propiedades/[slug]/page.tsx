@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import ReservationForm from "@/components/ReservationForm";
+import PropertyGallery from "@/components/PropertyGallery";
 import { getProperty, getContact } from "@/lib/data";
 import { amenityIcon, amenityLabel } from "@/lib/amenityCatalog";
 
@@ -45,18 +46,7 @@ export default async function PropertyDetail({ params }: { params: { slug: strin
         </div>
       </header>
 
-      {fotos.length > 0 && (
-        <div className="grid grid-cols-3 gap-3 mb-10 animate-scale-in">
-          <div
-            className="col-span-3 md:col-span-2 row-span-2 h-64 md:h-[420px] bg-luxe-cream bg-cover bg-center rounded-sm transition-transform duration-500 hover:scale-[1.01]"
-            style={{ backgroundImage: `url('${fotos[0]}')` }}
-          />
-          {fotos.slice(1, 3).map((f) => (
-            <div key={f} className="hidden md:block h-[206px] bg-luxe-cream bg-cover bg-center rounded-sm transition-transform duration-500 hover:scale-[1.02]"
-              style={{ backgroundImage: `url('${f}')` }} />
-          ))}
-        </div>
-      )}
+      <PropertyGallery fotos={fotos} alt={nombre} />
 
       {destacados.length > 0 && (
         <div className="mb-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
