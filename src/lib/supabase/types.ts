@@ -32,6 +32,8 @@ export interface PropertyRow {
   codigo_acceso?: string | null;
   video_url?: string | null;
   fotos_categorias?: string[];
+  airbnb_url?: string | null;
+  booking_url?: string | null;
 }
 
 export interface PlaceRow {

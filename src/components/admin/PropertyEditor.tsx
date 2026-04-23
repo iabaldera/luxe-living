@@ -18,6 +18,7 @@ const blank: Partial<PropertyRow> = {
   check_in_hora: "15:00", check_out_hora: "11:00",
   destacados: [], politica_cancelacion: "", politica_cancelacion_en: "",
   wifi_nombre: "", wifi_clave: "", codigo_acceso: "", video_url: "",
+  airbnb_url: "", booking_url: "",
 };
 
 export default function PropertyEditor({ initial }: { initial?: PropertyRow }) {
@@ -265,6 +266,14 @@ export default function PropertyEditor({ initial }: { initial?: PropertyRow }) {
               </div>
             )}
           </div>
+        </Section>
+
+        <Section title="Enlaces externos de reserva">
+          <p className="text-xs text-luxe-muted -mt-3">Aparecen como botones en la ficha pública si tienen URL.</p>
+          <Grid2>
+            <Input label="Airbnb · URL de la propiedad" value={p.airbnb_url ?? ""} onChange={(v) => set("airbnb_url", v)} placeholder="https://www.airbnb.com/rooms/…" />
+            <Input label="Booking.com · URL" value={p.booking_url ?? ""} onChange={(v) => set("booking_url", v)} placeholder="https://www.booking.com/hotel/…" />
+          </Grid2>
         </Section>
 
         <Section title="Acceso e información de llegada">
