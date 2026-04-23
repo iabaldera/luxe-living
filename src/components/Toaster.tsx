@@ -21,6 +21,10 @@ export default function Toaster() {
   useEffect(() => {
     const onEvt = (e: Event) => { const d = (e as CustomEvent).detail; if (d?.msg) push(d); };
     window.addEventListener("luxe-toast", onEvt as EventListener);
+    try {
+      const raw = sessionStorage.getItem("luxe-toast-pending");
+      if (raw) { sessionStorage.removeItem("luxe-toast-pending"); const d = JSON.parse(raw); if (d?.msg) push(d); }
+    } catch {}
     return () => window.removeEventListener("luxe-toast", onEvt as EventListener);
   }, [push]);
 

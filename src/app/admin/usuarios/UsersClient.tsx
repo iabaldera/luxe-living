@@ -144,8 +144,8 @@ function UserEditor({ user, onClose, onSaved }: { user: AdminUser | null; onClos
       toast.push({ kind: "error", msg });
       return;
     }
-    toast.push({ kind: "success", msg: isNew ? "Usuario creado" : "Usuario actualizado" });
-    onSaved();
+    try { sessionStorage.setItem("luxe-toast-pending", JSON.stringify({ kind: "success", msg: isNew ? "Usuario creado" : "Usuario actualizado" })); } catch {}
+    window.location.reload();
   }
 
   async function remove() {
@@ -165,8 +165,8 @@ function UserEditor({ user, onClose, onSaved }: { user: AdminUser | null; onClos
       toast.push({ kind: "error", msg });
       return;
     }
-    toast.push({ kind: "success", msg: "Usuario eliminado" });
-    onSaved();
+    try { sessionStorage.setItem("luxe-toast-pending", JSON.stringify({ kind: "success", msg: "Usuario eliminado" })); } catch {}
+    window.location.reload();
   }
 
   return (
