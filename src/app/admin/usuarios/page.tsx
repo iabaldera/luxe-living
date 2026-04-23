@@ -21,9 +21,20 @@ export default async function UsuariosPage() {
   }
 
   const admin = createAdminClient(url, serviceKey, { auth: { persistSession: false } });
-  const { data, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
+  const all: any[] = [];
+  let page = 1;
+  let error: any = null;
+  while (true) {
+    const { data, error: e } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
+    if (e) { error = e; break; }
+    const batch = data?.users ?? [];
+    all.push(...batch);
+    if (batch.length < 1000) break;
+    page += 1;
+    if (page > 20) break;
+  }
 
-  const users: AdminUser[] = (data?.users ?? []).map((u) => ({
+  const users: AdminUser[] = all.map((u) => ({
     id: u.id,
     email: u.email,
     created_at: u.created_at,
