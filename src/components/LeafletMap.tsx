@@ -10,23 +10,46 @@ import { useEffect, useState } from "react";
 
 const CENTER: [number, number] = [19.4517, -70.697];
 
-function makeIcon(color: string, isProperty = false) {
-  const svg = isProperty
-    ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 40" width="34" height="42">
-        <path d="M16 0C8 0 2 6 2 14c0 10 14 26 14 26s14-16 14-26c0-8-6-14-14-14z" fill="${color}" stroke="#C9A96E" stroke-width="2"/>
-        <path d="M10 16l6-5 6 5v7a1 1 0 0 1-1 1h-3v-4h-4v4h-3a1 1 0 0 1-1-1z" fill="#0A0A0A"/>
-      </svg>`
-    : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" width="28" height="36">
-        <path d="M12 0C6 0 2 4 2 10c0 7 10 22 10 22s10-15 10-22c0-6-4-10-10-10z" fill="${color}" stroke="#0A0A0A" stroke-width="1"/>
-        <circle cx="12" cy="10" r="3.2" fill="#0A0A0A"/>
-      </svg>`;
+function makeIcon(color: string, isProperty = false, custom?: { icono?: string | null; color?: string | null }) {
+  const fill = custom?.color || color;
+  const emoji = (custom?.icono || "").trim();
+  const isImg = /^https?:\/\//i.test(emoji);
+  const size = isProperty ? 40 : 34;
+  const stroke = isProperty ? "#C9A96E" : "#0A0A0A";
+  let svg: string;
+  if (emoji) {
+    const inner = isImg
+      ? `<image href="${emoji}" x="6" y="5" width="${size - 12}" height="${size - 12}" clip-path="circle(${(size - 12) / 2}px at ${(size - 12) / 2}px ${(size - 12) / 2}px)" transform="translate(0,0)" preserveAspectRatio="xMidYMid slice"/>`
+      : `<text x="${size / 2}" y="${size / 2 + 2}" text-anchor="middle" dominant-baseline="middle" font-size="${size * 0.55}">${escapeXml(emoji)}</text>`;
+    svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size + 8}" width="${size}" height="${size + 8}">
+      <path d="M${size / 2} ${size + 7}L${size / 2 - 6} ${size - 2}H${size / 2 + 6}Z" fill="${fill}"/>
+      <circle cx="${size / 2}" cy="${size / 2}" r="${size / 2 - 2}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>
+      ${inner}
+    </svg>`;
+  } else {
+    svg = isProperty
+      ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 40" width="34" height="42">
+          <path d="M16 0C8 0 2 6 2 14c0 10 14 26 14 26s14-16 14-26c0-8-6-14-14-14z" fill="${fill}" stroke="#C9A96E" stroke-width="2"/>
+          <path d="M10 16l6-5 6 5v7a1 1 0 0 1-1 1h-3v-4h-4v4h-3a1 1 0 0 1-1-1z" fill="#0A0A0A"/>
+        </svg>`
+      : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" width="28" height="36">
+          <path d="M12 0C6 0 2 4 2 10c0 7 10 22 10 22s10-15 10-22c0-6-4-10-10-10z" fill="${fill}" stroke="#0A0A0A" stroke-width="1"/>
+          <circle cx="12" cy="10" r="3.2" fill="#0A0A0A"/>
+        </svg>`;
+  }
+  const w = emoji ? size : (isProperty ? 34 : 28);
+  const h = emoji ? size + 8 : (isProperty ? 42 : 36);
   return L.divIcon({
     html: svg,
     className: "luxe-marker",
-    iconSize: isProperty ? [34, 42] : [28, 36],
-    iconAnchor: isProperty ? [17, 40] : [14, 34],
-    popupAnchor: [0, -30],
+    iconSize: [w, h],
+    iconAnchor: [w / 2, h],
+    popupAnchor: [0, -h + 6],
   });
+}
+
+function escapeXml(s: string) {
+  return s.replace(/[<>&"']/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&apos;" }[c]!));
 }
 
 export default function LeafletMap({
@@ -77,7 +100,7 @@ export default function LeafletMap({
         <Marker
           key={`place-${p.id}`}
           position={[p.lat, p.lng]}
-          icon={makeIcon(categoryColor[p.categoria])}
+          icon={makeIcon(categoryColor[p.categoria], false, { icono: p.icono, color: p.icono_color })}
           eventHandlers={{ click: () => onSelect(p) }}
         >
           <Popup>
@@ -113,7 +136,7 @@ export default function LeafletMap({
           <Marker
             key={`prop-${p.id}`}
             position={[p.lat as number, p.lng as number]}
-            icon={makeIcon(categoryColor.estancias, true)}
+            icon={makeIcon(categoryColor.estancias, true, { icono: p.icono, color: p.icono_color })}
           >
             <Popup>
               <div>

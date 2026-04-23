@@ -19,7 +19,11 @@ const blank: Partial<PropertyRow> = {
   destacados: [], politica_cancelacion: "", politica_cancelacion_en: "",
   wifi_nombre: "", wifi_clave: "", codigo_acceso: "", video_url: "",
   airbnb_url: "", booking_url: "",
+  icono: "", icono_color: "",
 };
+
+const ICON_PRESETS_PROP = ["🏡", "🏠", "🏢", "🏨", "🛏️", "🌴", "🏖️", "⭐", "💎", "📍"];
+const COLOR_PRESETS_PROP = ["#F8F5F0", "#C9A96E", "#D9BE89", "#A8874E", "#0A0A0A", "#E85D75", "#5DADE2", "#58D68D", "#F5B041", "#AF7AC5"];
 
 export default function PropertyEditor({ initial }: { initial?: PropertyRow }) {
   const router = useRouter();
@@ -304,6 +308,40 @@ export default function PropertyEditor({ initial }: { initial?: PropertyRow }) {
             lng={p.lng ?? null}
             onChange={(la, ln) => { set("lat", la); set("lng", ln); }}
           />
+        </Section>
+
+        <Section title="Icono del mapa">
+          <p className="text-xs text-luxe-muted">Personaliza el pin de esta propiedad en el mapa. Deja vacío para usar el diseño por defecto.</p>
+          <div className="flex items-center gap-4">
+            <div className="shrink-0 w-14 h-14 rounded-full flex items-center justify-center text-2xl border-2" style={{ background: p.icono_color || "#F8F5F0", borderColor: "#C9A96E" }}>
+              {p.icono && /^https?:\/\//i.test(p.icono) ? <img src={p.icono} alt="" className="w-10 h-10 rounded-full object-cover" /> : <span>{p.icono || "🏡"}</span>}
+            </div>
+            <div className="flex-1 space-y-3">
+              <Input label="Emoji o URL de imagen" value={p.icono ?? ""} onChange={(v) => set("icono", v)} />
+              <div className="flex flex-wrap gap-1.5">
+                {ICON_PRESETS_PROP.map((e) => (
+                  <button key={e} type="button" onClick={() => set("icono", e)}
+                    className="w-9 h-9 rounded-sm border border-luxe-line hover:border-luxe-gold bg-luxe-bone text-lg">{e}</button>
+                ))}
+                <button type="button" onClick={() => set("icono", "")}
+                  className="px-2 h-9 rounded-sm border border-luxe-line hover:border-luxe-gold bg-luxe-bone text-[10px] tracking-luxe uppercase text-luxe-muted">Limpiar</button>
+              </div>
+            </div>
+          </div>
+          <div>
+            <span className="text-[11px] tracking-luxe uppercase text-luxe-muted">Color de fondo</span>
+            <div className="mt-1.5 flex items-center gap-2 flex-wrap">
+              {COLOR_PRESETS_PROP.map((c) => (
+                <button key={c} type="button" onClick={() => set("icono_color", c)}
+                  className={`w-8 h-8 rounded-full border-2 ${p.icono_color === c ? "border-luxe-black" : "border-luxe-line"}`}
+                  style={{ background: c }} />
+              ))}
+              <input type="color" value={p.icono_color || "#F8F5F0"} onChange={(e) => set("icono_color", e.target.value)}
+                className="w-10 h-8 rounded-sm border border-luxe-line cursor-pointer" />
+              <button type="button" onClick={() => set("icono_color", "")}
+                className="px-2 h-8 rounded-sm border border-luxe-line hover:border-luxe-gold text-[10px] tracking-luxe uppercase text-luxe-muted">Por defecto</button>
+            </div>
+          </div>
         </Section>
 
         <Section title="Fotos">

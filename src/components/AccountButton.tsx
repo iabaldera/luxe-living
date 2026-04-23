@@ -54,6 +54,7 @@ export default function AccountButton({ compact = false }: { compact?: boolean }
   const [role, setRole] = useState<Role>("huesped");
   const [open, setOpen] = useState(false);
   const [align, setAlign] = useState<"left" | "right">("right");
+  const [vAlign, setVAlign] = useState<"top" | "bottom">("bottom");
   const ref = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
 
@@ -84,7 +85,11 @@ export default function AccountButton({ compact = false }: { compact?: boolean }
     if (!open || !btnRef.current) return;
     const rect = btnRef.current.getBoundingClientRect();
     const menuW = 240;
+    const estMenuH = 340;
     setAlign(rect.left + menuW > window.innerWidth ? "right" : "left");
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    setVAlign(spaceBelow < estMenuH && spaceAbove > spaceBelow ? "top" : "bottom");
   }, [open]);
 
   async function logout() {
@@ -116,7 +121,7 @@ export default function AccountButton({ compact = false }: { compact?: boolean }
       </button>
       {open && (
         <div
-          className={`absolute ${align === "right" ? "right-0" : "left-0"} top-full mt-2 z-50 w-[240px] max-h-[80vh] overflow-y-auto bg-white border border-luxe-line rounded-sm shadow-soft`}
+          className={`absolute ${align === "right" ? "right-0" : "left-0"} ${vAlign === "top" ? "bottom-full mb-2" : "top-full mt-2"} z-50 w-[240px] max-h-[70vh] overflow-y-auto bg-white border border-luxe-line rounded-sm shadow-soft`}
         >
           {email ? (
             <>

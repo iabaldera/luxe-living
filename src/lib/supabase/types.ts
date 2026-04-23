@@ -34,6 +34,8 @@ export interface PropertyRow {
   fotos_categorias?: string[];
   airbnb_url?: string | null;
   booking_url?: string | null;
+  icono?: string | null;
+  icono_color?: string | null;
 }
 
 export interface PlaceRow {
@@ -50,6 +52,8 @@ export interface PlaceRow {
   foto: string | null;
   google_maps_url: string | null;
   activo: boolean;
+  icono?: string | null;
+  icono_color?: string | null;
 }
 
 export interface RuleRow {
