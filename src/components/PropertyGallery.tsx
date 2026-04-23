@@ -104,48 +104,35 @@ export default function PropertyGallery({
 
       {tourOpen && (
         <div className="fixed inset-0 z-[9999] bg-luxe-bone animate-fade-in overflow-y-auto pt-16 lg:pt-0">
-          <button
-            onClick={() => setTourOpen(false)}
-            aria-label="Cerrar galería"
-            className="fixed top-[72px] lg:top-3 right-3 z-[10001] w-11 h-11 rounded-full bg-luxe-black/85 backdrop-blur text-luxe-bone border border-luxe-gold/40 shadow-xl flex items-center justify-center hover:bg-luxe-gold hover:text-luxe-black transition-colors"
-          >
-            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
-          </button>
           <header className="sticky top-0 z-[10000] bg-luxe-bone/95 backdrop-blur border-b border-luxe-line">
-            <div className="flex items-center justify-between gap-3 px-4 md:px-8 py-4">
-              <button onClick={() => setTourOpen(false)} className="flex items-center gap-2 text-luxe-black hover:text-luxe-gold-deep transition-colors text-xs tracking-luxe uppercase">
-                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M15 6l-6 6 6 6"/></svg>
+            <div className="flex items-center justify-between gap-3 px-4 md:px-8 py-2.5">
+              <button onClick={() => setTourOpen(false)} aria-label="Cerrar galería" className="flex items-center gap-1.5 text-luxe-black hover:text-luxe-gold-deep transition-colors text-xs tracking-luxe uppercase">
+                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M15 6l-6 6 6 6"/></svg>
                 <span className="hidden sm:inline">Volver</span>
               </button>
-              <h2 className="font-serif text-base md:text-lg text-luxe-black truncate">Recorrido fotográfico</h2>
-              <span className="text-xs tracking-luxe uppercase text-luxe-muted pr-12 md:pr-0">{fotos.length} fotos</span>
+              <h2 className="font-serif text-sm md:text-base text-luxe-black truncate">Recorrido fotográfico</h2>
+              <span className="text-[11px] tracking-luxe uppercase text-luxe-muted">{fotos.length} fotos</span>
             </div>
             {groups.length > 1 && (
-              <div className="flex gap-3 overflow-x-auto scrollbar-thin px-4 md:px-8 pb-4">
+              <div className="flex gap-1.5 overflow-x-auto scrollbar-thin px-4 md:px-8 pb-2">
                 {groups.map((g) => (
                   <button
                     key={g.cat}
                     onClick={() => scrollToCat(g.cat)}
-                    className={`flex-shrink-0 flex flex-col items-start gap-2 transition-all ${
-                      activeCat === g.cat ? "opacity-100" : "opacity-70 hover:opacity-100"
+                    className={`flex-shrink-0 px-3 py-1.5 text-[11px] tracking-luxe uppercase rounded-full border transition-all ${
+                      activeCat === g.cat
+                        ? "bg-luxe-black text-luxe-bone border-luxe-black"
+                        : "bg-transparent text-luxe-muted border-luxe-line hover:border-luxe-black hover:text-luxe-black"
                     }`}
                   >
-                    <div
-                      className={`w-20 h-16 md:w-24 md:h-20 bg-cover bg-center rounded-sm border-2 transition-colors ${
-                        activeCat === g.cat ? "border-luxe-black" : "border-transparent"
-                      }`}
-                      style={{ backgroundImage: `url('${g.items[0].url}')` }}
-                    />
-                    <span className={`text-[11px] tracking-luxe uppercase ${activeCat === g.cat ? "text-luxe-black border-b-2 border-luxe-black pb-0.5" : "text-luxe-muted"}`}>
-                      {g.cat}
-                    </span>
+                    {g.cat}
                   </button>
                 ))}
               </div>
             )}
           </header>
 
-          <div className="max-w-4xl mx-auto px-4 md:px-8 py-8 space-y-10">
+          <div className="max-w-4xl mx-auto px-4 md:px-8 py-6 space-y-8">
             {groups.map((g) => (
               <section
                 key={g.cat}
