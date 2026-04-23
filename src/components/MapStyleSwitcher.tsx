@@ -18,12 +18,12 @@ export default function MapStyleSwitcher({
         <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.6">
           <path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3zM9 4v13M15 7v13" />
         </svg>
-        <span>{current.label}</span>
+        <span>Estilo de mapa: {current.label}</span>
       </button>
       {open && (
         <>
           <div className="fixed inset-0 z-[400]" onClick={() => setOpen(false)} />
-          <div className="absolute top-full mt-1 right-0 z-[401] bg-luxe-ink border border-luxe-gold/40 rounded-sm shadow-xl min-w-[140px] overflow-hidden">
+          <div className="absolute bottom-full mb-1 right-0 z-[401] bg-luxe-ink border border-luxe-gold/40 rounded-sm shadow-xl min-w-[160px] overflow-hidden">
             {MAP_STYLES.map((s) => (
               <button
                 key={s.key}
