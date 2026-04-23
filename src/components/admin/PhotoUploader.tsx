@@ -3,11 +3,19 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/browser";
 
 const BUCKET = "luxe-media";
-const MAX_PHOTOS = 10;
+const MAX_PHOTOS = 30;
+const CAT_SUGGESTIONS = ["Sala", "Cocina", "Habitación", "Baño", "Terraza", "Piscina", "Exterior", "Comedor", "Vista"];
 
 export default function PhotoUploader({
-  folder, values, onChange, max = MAX_PHOTOS,
-}: { folder: string; values: string[]; onChange: (fotos: string[]) => void; max?: number }) {
+  folder, values, categorias = [], onChange, onCategoriasChange, max = MAX_PHOTOS,
+}: {
+  folder: string;
+  values: string[];
+  categorias?: string[];
+  onChange: (fotos: string[]) => void;
+  onCategoriasChange?: (cats: string[]) => void;
+  max?: number;
+}) {
   const supabase = createClient();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -15,6 +23,18 @@ export default function PhotoUploader({
   const [overIdx, setOverIdx] = useState<number | null>(null);
   const remaining = Math.max(0, max - values.length);
   const atLimit = remaining === 0;
+
+  const normCats = () => {
+    const out = values.map((_, i) => categorias[i] ?? "");
+    return out;
+  };
+
+  const updateCat = (i: number, v: string) => {
+    if (!onCategoriasChange) return;
+    const next = normCats();
+    next[i] = v;
+    onCategoriasChange(next);
+  };
 
   async function upload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
@@ -34,16 +54,28 @@ export default function PhotoUploader({
       urls.push(data.publicUrl);
     }
     setBusy(false);
-    if (urls.length) onChange([...values, ...urls]);
+    if (urls.length) {
+      onChange([...values, ...urls]);
+      onCategoriasChange?.([...normCats(), ...urls.map(() => "")]);
+    }
   }
 
-  function remove(i: number) { onChange(values.filter((_, idx) => idx !== i)); }
+  function remove(i: number) {
+    onChange(values.filter((_, idx) => idx !== i));
+    onCategoriasChange?.(normCats().filter((_, idx) => idx !== i));
+  }
   function makeCover(i: number) {
     if (i === 0) return;
     const next = values.slice();
     const [item] = next.splice(i, 1);
     next.unshift(item);
     onChange(next);
+    if (onCategoriasChange) {
+      const c = normCats();
+      const [cv] = c.splice(i, 1);
+      c.unshift(cv);
+      onCategoriasChange(c);
+    }
   }
   function reorder(from: number, to: number) {
     if (from === to || from < 0 || to < 0 || from >= values.length || to >= values.length) return;
@@ -51,7 +83,15 @@ export default function PhotoUploader({
     const [item] = next.splice(from, 1);
     next.splice(to, 0, item);
     onChange(next);
+    if (onCategoriasChange) {
+      const c = normCats();
+      const [cv] = c.splice(from, 1);
+      c.splice(to, 0, cv);
+      onCategoriasChange(c);
+    }
   }
+
+  const catList = normCats();
 
   return (
     <div>
@@ -60,32 +100,32 @@ export default function PhotoUploader({
           const isOver = overIdx === i && dragIdx !== null && dragIdx !== i;
           return (
             <div
-              key={url}
-              draggable
-              onDragStart={(e) => { setDragIdx(i); e.dataTransfer.effectAllowed = "move"; }}
-              onDragOver={(e) => { e.preventDefault(); if (overIdx !== i) setOverIdx(i); }}
-              onDragLeave={() => { if (overIdx === i) setOverIdx(null); }}
-              onDrop={(e) => { e.preventDefault(); if (dragIdx != null) reorder(dragIdx, i); setDragIdx(null); setOverIdx(null); }}
-              onDragEnd={() => { setDragIdx(null); setOverIdx(null); }}
+              key={url + i}
               className={`group relative rounded-sm transition-all duration-200 ease-luxe ${
                 dragIdx === i ? "opacity-40 scale-95" : ""
               } ${isOver ? "ring-2 ring-luxe-gold ring-offset-2 ring-offset-luxe-bone" : ""}`}
             >
               <div
+                draggable
+                onDragStart={(e) => { setDragIdx(i); e.dataTransfer.effectAllowed = "move"; }}
+                onDragOver={(e) => { e.preventDefault(); if (overIdx !== i) setOverIdx(i); }}
+                onDragLeave={() => { if (overIdx === i) setOverIdx(null); }}
+                onDrop={(e) => { e.preventDefault(); if (dragIdx != null) reorder(dragIdx, i); setDragIdx(null); setOverIdx(null); }}
+                onDragEnd={() => { setDragIdx(null); setOverIdx(null); }}
                 className={`aspect-square bg-cover bg-center rounded-sm border cursor-grab active:cursor-grabbing transition-all duration-200 ${
                   i === 0 ? "border-luxe-gold shadow-gold" : "border-luxe-line"
                 }`}
                 style={{ backgroundImage: `url('${url}')` }}
               />
-              <span className="absolute top-1.5 left-1.5 flex items-center gap-1 bg-luxe-black/70 backdrop-blur text-luxe-bone text-[9px] tracking-luxe uppercase px-1.5 py-0.5 rounded">
+              <span className="absolute top-1.5 left-1.5 flex items-center gap-1 bg-luxe-black/70 backdrop-blur text-luxe-bone text-[9px] tracking-luxe uppercase px-1.5 py-0.5 rounded pointer-events-none">
                 <span className="font-serif text-luxe-gold">#{i + 1}</span>
               </span>
               {i === 0 && (
-                <span className="absolute top-1.5 right-1.5 bg-luxe-gold text-luxe-black text-[9px] tracking-luxe uppercase px-1.5 py-0.5 rounded animate-scale-in">
+                <span className="absolute top-1.5 right-1.5 bg-luxe-gold text-luxe-black text-[9px] tracking-luxe uppercase px-1.5 py-0.5 rounded animate-scale-in pointer-events-none">
                   ★ Portada
                 </span>
               )}
-              <div className="absolute inset-x-0 bottom-0 p-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-t from-black/75 to-transparent rounded-b-sm">
+              <div className="absolute inset-x-0 bottom-[28px] p-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-t from-black/75 to-transparent">
                 {i !== 0 && (
                   <button
                     type="button"
@@ -105,9 +145,15 @@ export default function PhotoUploader({
                   ×
                 </button>
               </div>
-              <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-70 transition-opacity pointer-events-none text-luxe-bone text-xs bg-luxe-black/60 px-2 py-1 rounded">
-                ⋮⋮ arrastra
-              </span>
+              {onCategoriasChange && (
+                <input
+                  list="foto-cat-suggestions"
+                  value={catList[i] ?? ""}
+                  onChange={(e) => updateCat(i, e.target.value)}
+                  placeholder="Categoría…"
+                  className="mt-1 w-full bg-luxe-bone border border-luxe-line rounded-sm px-2 py-1 text-xs focus:outline-none focus:border-luxe-gold"
+                />
+              )}
             </div>
           );
         })}
@@ -119,9 +165,12 @@ export default function PhotoUploader({
           </label>
         )}
       </div>
+      <datalist id="foto-cat-suggestions">
+        {CAT_SUGGESTIONS.map((c) => <option key={c} value={c} />)}
+      </datalist>
       {err && <p className="mt-3 text-sm text-red-600">{err}</p>}
       <p className="mt-3 text-xs text-luxe-muted">
-        {values.length}/{max} fotos · La primera es la portada. Arrastra para reordenar o usa <span className="text-luxe-gold-deep">★ Portada</span>.
+        {values.length}/{max} fotos · Agrupa por categoría (Sala, Habitación…) para el recorrido estilo Airbnb. Arrastra para reordenar.
       </p>
     </div>
   );

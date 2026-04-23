@@ -46,7 +46,7 @@ export default async function PropertyDetail({ params }: { params: { slug: strin
         </div>
       </header>
 
-      <PropertyGallery fotos={fotos} alt={nombre} />
+      <PropertyGallery fotos={fotos} categorias={property.fotos_categorias ?? []} alt={nombre} />
 
       {destacados.length > 0 && (
         <div className="mb-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">

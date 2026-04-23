@@ -1,103 +1,187 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-export default function PropertyGallery({ fotos, alt }: { fotos: string[]; alt: string }) {
-  const [open, setOpen] = useState(false);
-  const [idx, setIdx] = useState(0);
+interface Photo { url: string; cat: string }
+
+export default function PropertyGallery({
+  fotos, categorias = [], alt,
+}: { fotos: string[]; categorias?: string[]; alt: string }) {
+  const photos: Photo[] = fotos.map((url, i) => ({ url, cat: (categorias[i] || "").trim() }));
+
+  const groups = useMemo(() => {
+    const map = new Map<string, Photo[]>();
+    for (const p of photos) {
+      const key = p.cat || "Otras";
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(p);
+    }
+    return Array.from(map.entries()).map(([cat, items]) => ({ cat, items }));
+  }, [fotos.join("|"), categorias.join("|")]);
+
+  const [tourOpen, setTourOpen] = useState(false);
+  const [light, setLight] = useState<number | null>(null);
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [activeCat, setActiveCat] = useState<string | null>(groups[0]?.cat ?? null);
 
   useEffect(() => {
-    if (!open) return;
+    if (!tourOpen && light === null) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-      if (e.key === "ArrowRight") setIdx((i) => (i + 1) % fotos.length);
-      if (e.key === "ArrowLeft") setIdx((i) => (i - 1 + fotos.length) % fotos.length);
+      if (e.key === "Escape") { setLight(null); if (light === null) setTourOpen(false); }
+      if (light !== null) {
+        if (e.key === "ArrowRight") setLight((i) => ((i ?? 0) + 1) % photos.length);
+        if (e.key === "ArrowLeft") setLight((i) => ((i ?? 0) - 1 + photos.length) % photos.length);
+      }
     };
     window.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
     return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
-  }, [open, fotos.length]);
+  }, [tourOpen, light, photos.length]);
 
   if (!fotos.length) return null;
 
-  const openAt = (i: number) => { setIdx(i); setOpen(true); };
-  const cover = fotos[0];
-  const rest = fotos.slice(1);
+  const cover = photos[0].url;
+  const rest = photos.slice(1, 5);
+  const openAt = (url: string) => {
+    const i = photos.findIndex((p) => p.url === url);
+    setLight(i >= 0 ? i : 0);
+  };
+  const scrollToCat = (cat: string) => {
+    setActiveCat(cat);
+    sectionRefs.current[cat]?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <>
-      <div className="grid grid-cols-4 gap-3 mb-10 animate-scale-in">
+      <div className="relative grid grid-cols-4 grid-rows-2 gap-2 mb-10 animate-scale-in rounded-sm overflow-hidden">
         <button
           type="button"
-          onClick={() => openAt(0)}
-          className="col-span-4 md:col-span-2 md:row-span-2 h-64 md:h-[420px] bg-luxe-cream bg-cover bg-center rounded-sm transition-transform duration-500 hover:scale-[1.01] overflow-hidden relative group"
+          onClick={() => setTourOpen(true)}
+          className="col-span-4 md:col-span-2 row-span-2 h-64 md:h-[420px] bg-luxe-cream bg-cover bg-center transition-transform duration-500 hover:scale-[1.01] relative group"
           style={{ backgroundImage: `url('${cover}')` }}
           aria-label={alt}
         >
           <span className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         </button>
-        {rest.slice(0, 4).map((f, i) => {
-          const realIdx = i + 1;
-          const isLast = i === 3 && rest.length > 4;
-          return (
-            <button
-              key={f + i}
-              type="button"
-              onClick={() => openAt(isLast ? 0 : realIdx)}
-              className="hidden md:block h-[204px] bg-luxe-cream bg-cover bg-center rounded-sm transition-transform duration-500 hover:scale-[1.02] relative overflow-hidden group"
-              style={{ backgroundImage: `url('${f}')` }}
-            >
-              <span className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              {isLast && (
-                <span className="absolute inset-0 bg-luxe-black/55 flex flex-col items-center justify-center text-luxe-bone">
-                  <span className="font-serif text-3xl">+{fotos.length - 4}</span>
-                  <span className="text-[10px] tracking-luxe uppercase mt-1">Ver todas</span>
-                </span>
-              )}
-            </button>
-          );
-        })}
+        {rest.map((p, i) => (
+          <button
+            key={p.url + i}
+            type="button"
+            onClick={() => setTourOpen(true)}
+            className="hidden md:block h-[206px] bg-luxe-cream bg-cover bg-center transition-transform duration-500 hover:scale-[1.02] relative overflow-hidden group"
+            style={{ backgroundImage: `url('${p.url}')` }}
+          >
+            <span className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
+        ))}
         <button
           type="button"
-          onClick={() => openAt(0)}
-          className="md:hidden col-span-4 text-xs tracking-luxe uppercase border border-luxe-line rounded-sm py-2.5 text-luxe-black hover:border-luxe-gold hover:text-luxe-gold-deep transition-colors"
+          onClick={() => setTourOpen(true)}
+          className="absolute bottom-3 right-3 z-10 px-4 py-2 bg-white border border-luxe-black/20 rounded-sm text-xs tracking-luxe uppercase text-luxe-black shadow-soft hover:border-luxe-gold hover:text-luxe-gold-deep transition-all flex items-center gap-2"
         >
-          Ver {fotos.length} fotos
+          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <rect x="3" y="5" width="18" height="14" rx="1" /><circle cx="9" cy="11" r="2" /><path d="m21 17-6-6-7 8" />
+          </svg>
+          Mostrar las {fotos.length} fotos
         </button>
       </div>
 
-      {open && (
-        <div className="fixed inset-0 z-[9999] bg-luxe-black/95 flex flex-col animate-fade-in">
+      {tourOpen && (
+        <div className="fixed inset-0 z-[9999] bg-luxe-bone animate-fade-in overflow-y-auto">
+          <header className="sticky top-0 z-30 bg-luxe-bone/95 backdrop-blur border-b border-luxe-line">
+            <div className="flex items-center justify-between px-4 md:px-8 py-4">
+              <button onClick={() => setTourOpen(false)} className="flex items-center gap-2 text-luxe-black hover:text-luxe-gold-deep transition-colors">
+                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M15 6l-6 6 6 6"/></svg>
+              </button>
+              <h2 className="font-serif text-base md:text-lg text-luxe-black">Recorrido fotográfico</h2>
+              <span className="text-xs tracking-luxe uppercase text-luxe-muted">{fotos.length} fotos</span>
+            </div>
+            {groups.length > 1 && (
+              <div className="flex gap-3 overflow-x-auto scrollbar-thin px-4 md:px-8 pb-4">
+                {groups.map((g) => (
+                  <button
+                    key={g.cat}
+                    onClick={() => scrollToCat(g.cat)}
+                    className={`flex-shrink-0 flex flex-col items-start gap-2 transition-all ${
+                      activeCat === g.cat ? "opacity-100" : "opacity-70 hover:opacity-100"
+                    }`}
+                  >
+                    <div
+                      className={`w-20 h-16 md:w-24 md:h-20 bg-cover bg-center rounded-sm border-2 transition-colors ${
+                        activeCat === g.cat ? "border-luxe-black" : "border-transparent"
+                      }`}
+                      style={{ backgroundImage: `url('${g.items[0].url}')` }}
+                    />
+                    <span className={`text-[11px] tracking-luxe uppercase ${activeCat === g.cat ? "text-luxe-black border-b-2 border-luxe-black pb-0.5" : "text-luxe-muted"}`}>
+                      {g.cat}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </header>
+
+          <div className="max-w-4xl mx-auto px-4 md:px-8 py-8 space-y-10">
+            {groups.map((g) => (
+              <section
+                key={g.cat}
+                ref={(el) => { sectionRefs.current[g.cat] = el; }}
+                className="animate-slide-up"
+              >
+                <h3 className="font-serif text-2xl md:text-3xl text-luxe-black mb-4">{g.cat}</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {g.items.map((p, i) => (
+                    <button
+                      key={p.url + i}
+                      onClick={() => openAt(p.url)}
+                      className={`bg-luxe-cream bg-cover bg-center rounded-sm transition-transform duration-300 hover:scale-[1.01] overflow-hidden ${
+                        i === 0 && g.items.length > 1 ? "sm:col-span-2 aspect-[16/10]" : "aspect-[4/3]"
+                      }`}
+                      style={{ backgroundImage: `url('${p.url}')` }}
+                      aria-label={`${g.cat} ${i + 1}`}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {light !== null && (
+        <div className="fixed inset-0 z-[10000] bg-luxe-black/95 flex flex-col animate-fade-in">
           <div className="flex items-center justify-between px-5 py-4 text-luxe-bone">
-            <span className="text-xs tracking-luxe uppercase">{idx + 1} / {fotos.length}</span>
-            <button onClick={() => setOpen(false)} className="text-luxe-bone hover:text-luxe-gold text-2xl leading-none">×</button>
+            <span className="text-xs tracking-luxe uppercase">
+              {light + 1} / {photos.length}{photos[light].cat ? ` · ${photos[light].cat}` : ""}
+            </span>
+            <button onClick={() => setLight(null)} className="text-luxe-bone hover:text-luxe-gold text-2xl leading-none">×</button>
           </div>
           <div className="flex-1 flex items-center justify-center relative px-4 pb-4">
             <button
-              onClick={() => setIdx((i) => (i - 1 + fotos.length) % fotos.length)}
+              onClick={() => setLight((i) => ((i ?? 0) - 1 + photos.length) % photos.length)}
               className="absolute left-4 md:left-8 w-10 h-10 rounded-full border border-luxe-gold/60 text-luxe-bone hover:bg-luxe-gold hover:text-luxe-black transition-colors flex items-center justify-center"
               aria-label="Anterior"
             >‹</button>
             <img
-              src={fotos[idx]}
-              alt={`${alt} ${idx + 1}`}
+              src={photos[light].url}
+              alt={`${alt} ${light + 1}`}
               className="max-h-full max-w-full object-contain animate-fade-in"
-              key={idx}
+              key={light}
             />
             <button
-              onClick={() => setIdx((i) => (i + 1) % fotos.length)}
+              onClick={() => setLight((i) => ((i ?? 0) + 1) % photos.length)}
               className="absolute right-4 md:right-8 w-10 h-10 rounded-full border border-luxe-gold/60 text-luxe-bone hover:bg-luxe-gold hover:text-luxe-black transition-colors flex items-center justify-center"
               aria-label="Siguiente"
             >›</button>
           </div>
           <div className="px-4 pb-5 flex gap-2 overflow-x-auto scrollbar-thin">
-            {fotos.map((f, i) => (
+            {photos.map((p, i) => (
               <button
-                key={f + i}
-                onClick={() => setIdx(i)}
+                key={p.url + i}
+                onClick={() => setLight(i)}
                 className={`flex-shrink-0 w-20 h-14 bg-cover bg-center rounded-sm border-2 transition-all ${
-                  i === idx ? "border-luxe-gold scale-105" : "border-transparent opacity-60 hover:opacity-100"
+                  i === light ? "border-luxe-gold scale-105" : "border-transparent opacity-60 hover:opacity-100"
                 }`}
-                style={{ backgroundImage: `url('${f}')` }}
+                style={{ backgroundImage: `url('${p.url}')` }}
               />
             ))}
           </div>

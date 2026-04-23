@@ -289,7 +289,9 @@ export default function PropertyEditor({ initial }: { initial?: PropertyRow }) {
           <PhotoUploader
             folder="propiedades"
             values={p.fotos ?? []}
+            categorias={p.fotos_categorias ?? []}
             onChange={(fotos) => set("fotos", fotos)}
+            onCategoriasChange={(cats) => set("fotos_categorias", cats)}
           />
         </Section>
       </div>

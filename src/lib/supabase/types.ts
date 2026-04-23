@@ -31,6 +31,7 @@ export interface PropertyRow {
   wifi_clave?: string | null;
   codigo_acceso?: string | null;
   video_url?: string | null;
+  fotos_categorias?: string[];
 }
 
 export interface PlaceRow {
