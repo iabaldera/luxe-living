@@ -13,7 +13,7 @@ const CENTER: [number, number] = [19.4517, -70.697];
 function makeIcon(color: string, isProperty = false, custom?: { icono?: string | null; color?: string | null; isPhoto?: boolean }) {
   const fill = custom?.color || color;
   const raw = (custom?.icono || "").trim();
-  const isImg = /^https?:\/\//i.test(raw) || /^\/.+\.(png|jpg|jpeg|svg|webp|gif)(\?.*)?$/i.test(raw);
+  const isImg = /^(https?:|data:image\/)/i.test(raw) || /^\/.+\.(png|jpg|jpeg|svg|webp|gif)(\?.*)?$/i.test(raw);
   const size = isProperty ? 42 : 36;
   const stroke = isProperty ? "#C9A96E" : "#0A0A0A";
 
