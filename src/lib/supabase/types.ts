@@ -17,6 +17,20 @@ export interface PropertyRow {
   lng: number | null;
   fotos: string[];
   activo: boolean;
+  tipo?: string | null;
+  piso?: string | null;
+  area_m2?: number | null;
+  camas?: number | null;
+  min_noches?: number | null;
+  check_in_hora?: string | null;
+  check_out_hora?: string | null;
+  destacados?: string[];
+  politica_cancelacion?: string | null;
+  politica_cancelacion_en?: string | null;
+  wifi_nombre?: string | null;
+  wifi_clave?: string | null;
+  codigo_acceso?: string | null;
+  video_url?: string | null;
 }
 
 export interface PlaceRow {

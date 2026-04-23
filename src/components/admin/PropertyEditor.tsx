@@ -1,38 +1,80 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 import type { PropertyRow } from "@/lib/supabase/types";
 import LocationPicker from "./LocationPicker";
 import PhotoUploader from "./PhotoUploader";
+import { AMENITY_CATALOG, AMENITY_GROUPS, AMENITY_MAP, amenityIcon, amenityLabel } from "@/lib/amenityCatalog";
 
-const AMENITIES = ["wifi", "piscina", "gym", "parking", "ac", "cocina", "bbq"];
+const TIPOS = ["apartamento", "penthouse", "estudio", "villa", "casa", "loft", "suite"];
 
 const blank: Partial<PropertyRow> = {
   slug: "", nombre: "", nombre_en: "", ubicacion: "", ubicacion_en: "",
   descripcion: "", descripcion_en: "",
   habitaciones: 1, banos: 1, huespedes: 2, precio_noche: 0, moneda: "USD",
   amenidades: [], lat: null, lng: null, fotos: [], activo: true,
+  tipo: "apartamento", piso: "", area_m2: null, camas: null, min_noches: 1,
+  check_in_hora: "15:00", check_out_hora: "11:00",
+  destacados: [], politica_cancelacion: "", politica_cancelacion_en: "",
+  wifi_nombre: "", wifi_clave: "", codigo_acceso: "", video_url: "",
 };
 
 export default function PropertyEditor({ initial }: { initial?: PropertyRow }) {
   const router = useRouter();
   const supabase = createClient();
-  const [p, setP] = useState<Partial<PropertyRow>>(initial ?? blank);
+  const [p, setP] = useState<Partial<PropertyRow>>({ ...blank, ...(initial ?? {}) });
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [amenityQuery, setAmenityQuery] = useState("");
+  const [customAmenity, setCustomAmenity] = useState("");
+  const [destacado, setDestacado] = useState("");
 
   const set = <K extends keyof PropertyRow>(k: K, v: PropertyRow[K]) => setP((s) => ({ ...s, [k]: v }));
+
+  const selected = p.amenidades ?? [];
   const toggleAmenity = (a: string) => {
-    const cur = p.amenidades ?? [];
-    set("amenidades", cur.includes(a) ? cur.filter((x) => x !== a) : [...cur, a]);
+    set("amenidades", selected.includes(a) ? selected.filter((x) => x !== a) : [...selected, a]);
   };
+  const addCustom = () => {
+    const v = customAmenity.trim();
+    if (!v) return;
+    if (!selected.includes(v)) set("amenidades", [...selected, v]);
+    setCustomAmenity("");
+  };
+
+  const filteredGroups = useMemo(() => {
+    const q = amenityQuery.trim().toLowerCase();
+    return AMENITY_GROUPS.map((g) => ({
+      ...g,
+      items: AMENITY_CATALOG.filter(
+        (a) => a.group === g.key && (!q || a.es.toLowerCase().includes(q) || a.en.toLowerCase().includes(q) || a.key.includes(q))
+      ),
+    })).filter((g) => g.items.length > 0);
+  }, [amenityQuery]);
+
+  const customSelected = selected.filter((k) => !AMENITY_MAP[k]);
+
+  const destacados = p.destacados ?? [];
+  const addDestacado = () => {
+    const v = destacado.trim();
+    if (!v) return;
+    set("destacados", [...destacados, v]);
+    setDestacado("");
+  };
+  const removeDestacado = (i: number) => set("destacados", destacados.filter((_, idx) => idx !== i));
 
   async function save() {
     setErr(null);
     if (!p.slug || !p.nombre) { setErr("Slug y nombre son obligatorios."); return; }
     setSaving(true);
-    const payload = { ...p, precio_noche: Number(p.precio_noche) || 0 };
+    const payload = {
+      ...p,
+      precio_noche: Number(p.precio_noche) || 0,
+      area_m2: p.area_m2 ? Number(p.area_m2) : null,
+      camas: p.camas ? Number(p.camas) : null,
+      min_noches: p.min_noches ? Number(p.min_noches) : null,
+    };
     const { data, error } = initial
       ? await supabase.from("properties").update(payload).eq("id", initial.id).select().single()
       : await supabase.from("properties").insert(payload).select().single();
@@ -87,6 +129,11 @@ export default function PropertyEditor({ initial }: { initial?: PropertyRow }) {
             <Input label="Ubicación (ES)" value={p.ubicacion ?? ""} onChange={(v) => set("ubicacion", v)} />
             <Input label="Ubicación (EN)" value={p.ubicacion_en ?? ""} onChange={(v) => set("ubicacion_en", v)} />
           </Grid2>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <Select label="Tipo" value={p.tipo ?? ""} onChange={(v) => set("tipo", v)} options={TIPOS} />
+            <Input label="Piso / Nivel" value={p.piso ?? ""} onChange={(v) => set("piso", v)} placeholder="Ej: 12" />
+            <Input label="Área (m²)" type="number" value={p.area_m2 != null ? String(p.area_m2) : ""} onChange={(v) => set("area_m2", v ? Number(v) : null)} />
+          </div>
         </Section>
 
         <Section title="Descripción">
@@ -97,32 +144,128 @@ export default function PropertyEditor({ initial }: { initial?: PropertyRow }) {
         </Section>
 
         <Section title="Capacidad y precio">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
             <Input label="Huéspedes" type="number" value={String(p.huespedes ?? 1)} onChange={(v) => set("huespedes", Number(v))} />
             <Input label="Habitaciones" type="number" value={String(p.habitaciones ?? 1)} onChange={(v) => set("habitaciones", Number(v))} />
+            <Input label="Camas" type="number" value={p.camas != null ? String(p.camas) : ""} onChange={(v) => set("camas", v ? Number(v) : null)} />
             <Input label="Baños" type="number" value={String(p.banos ?? 1)} onChange={(v) => set("banos", Number(v))} />
             <Input label="Precio / noche" type="number" value={String(p.precio_noche ?? 0)} onChange={(v) => set("precio_noche", Number(v))} />
             <Input label="Moneda" value={p.moneda ?? "USD"} onChange={(v) => set("moneda", v)} />
           </div>
         </Section>
 
-        <Section title="Amenidades">
-          <div className="flex flex-wrap gap-2">
-            {AMENITIES.map((a) => {
-              const on = (p.amenidades ?? []).includes(a);
-              return (
-                <button
-                  key={a}
-                  onClick={() => toggleAmenity(a)}
-                  className={`px-3 py-1.5 text-xs tracking-luxe uppercase border rounded-full transition-colors ${
-                    on ? "bg-luxe-black text-luxe-bone border-luxe-black" : "border-luxe-line text-luxe-muted hover:text-luxe-black"
-                  }`}
-                >
-                  {a}
-                </button>
-              );
-            })}
+        <Section title="Estancia">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <Input label="Check-in" value={p.check_in_hora ?? ""} onChange={(v) => set("check_in_hora", v)} placeholder="15:00" />
+            <Input label="Check-out" value={p.check_out_hora ?? ""} onChange={(v) => set("check_out_hora", v)} placeholder="11:00" />
+            <Input label="Mínimo de noches" type="number" value={p.min_noches != null ? String(p.min_noches) : ""} onChange={(v) => set("min_noches", v ? Number(v) : null)} />
           </div>
+          <Grid2>
+            <Textarea label="Política de cancelación (ES)" value={p.politica_cancelacion ?? ""} onChange={(v) => set("politica_cancelacion", v)} />
+            <Textarea label="Política de cancelación (EN)" value={p.politica_cancelacion_en ?? ""} onChange={(v) => set("politica_cancelacion_en", v)} />
+          </Grid2>
+        </Section>
+
+        <Section title="Puntos destacados">
+          <p className="text-xs text-luxe-muted -mt-3">Frases cortas que resaltan esta estancia (vista al mar, balcón privado, etc.)</p>
+          <div className="flex gap-2">
+            <input
+              value={destacado}
+              onChange={(e) => setDestacado(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addDestacado(); } }}
+              placeholder="Ej: Balcón con vista al monumento"
+              className="flex-1 bg-luxe-bone border border-luxe-line rounded-sm px-3 py-2.5 text-sm focus:outline-none focus:border-luxe-gold"
+            />
+            <button onClick={addDestacado} className="px-4 py-2.5 bg-luxe-black text-luxe-bone text-xs tracking-luxe uppercase hover:bg-luxe-gold hover:text-luxe-black transition-colors">
+              + Añadir
+            </button>
+          </div>
+          {destacados.length > 0 && (
+            <ul className="grid gap-2">
+              {destacados.map((d, i) => (
+                <li key={i} className="flex items-center justify-between bg-luxe-bone border border-luxe-line rounded-sm px-3 py-2 animate-slide-up" style={{ animationDelay: `${i * 40}ms` }}>
+                  <span className="text-sm text-luxe-black flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-luxe-gold" />{d}
+                  </span>
+                  <button onClick={() => removeDestacado(i)} className="text-luxe-muted hover:text-red-600 text-sm">×</button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Section>
+
+        <Section title="Amenidades">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <p className="text-xs text-luxe-muted">{selected.length} seleccionadas</p>
+            <input
+              value={amenityQuery}
+              onChange={(e) => setAmenityQuery(e.target.value)}
+              placeholder="Buscar amenidad…"
+              className="flex-1 min-w-[200px] bg-luxe-bone border border-luxe-line rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-luxe-gold"
+            />
+          </div>
+          <div className="space-y-5">
+            {filteredGroups.map((g) => (
+              <div key={g.key}>
+                <h3 className="text-[10px] tracking-luxe uppercase text-luxe-gold-deep mb-2">{g.es}</h3>
+                <div className="flex flex-wrap gap-2">
+                  {g.items.map((a) => {
+                    const on = selected.includes(a.key);
+                    const Icon = a.Icon;
+                    return (
+                      <button
+                        key={a.key}
+                        onClick={() => toggleAmenity(a.key)}
+                        className={`flex items-center gap-2 px-3 py-1.5 text-xs tracking-luxe uppercase border rounded-full transition-all duration-200 ease-luxe ${
+                          on
+                            ? "bg-luxe-black text-luxe-bone border-luxe-black shadow-gold"
+                            : "border-luxe-line text-luxe-muted hover:text-luxe-black hover:border-luxe-gold/50"
+                        }`}
+                      >
+                        <Icon className="w-3.5 h-3.5" />
+                        {a.es}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="pt-4 border-t border-luxe-line">
+            <h3 className="text-[10px] tracking-luxe uppercase text-luxe-gold-deep mb-2">Amenidad personalizada</h3>
+            <div className="flex gap-2">
+              <input
+                value={customAmenity}
+                onChange={(e) => setCustomAmenity(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustom(); } }}
+                placeholder="Ej: Vinoteca climatizada"
+                className="flex-1 bg-luxe-bone border border-luxe-line rounded-sm px-3 py-2 text-sm focus:outline-none focus:border-luxe-gold"
+              />
+              <button onClick={addCustom} className="px-4 py-2 bg-luxe-black text-luxe-bone text-xs tracking-luxe uppercase hover:bg-luxe-gold hover:text-luxe-black transition-colors">
+                + Añadir
+              </button>
+            </div>
+            {customSelected.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {customSelected.map((k) => (
+                  <span key={k} className="flex items-center gap-2 px-3 py-1.5 text-xs tracking-luxe uppercase bg-luxe-gold/20 border border-luxe-gold/50 text-luxe-black rounded-full animate-scale-in">
+                    {k}
+                    <button onClick={() => toggleAmenity(k)} className="hover:text-red-600">×</button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </Section>
+
+        <Section title="Acceso e información de llegada">
+          <p className="text-xs text-luxe-muted -mt-3">Visible solo para el huésped (no en el listado público).</p>
+          <Grid2>
+            <Input label="Nombre del WiFi" value={p.wifi_nombre ?? ""} onChange={(v) => set("wifi_nombre", v)} />
+            <Input label="Contraseña WiFi" value={p.wifi_clave ?? ""} onChange={(v) => set("wifi_clave", v)} />
+          </Grid2>
+          <Input label="Código de acceso / puerta" value={p.codigo_acceso ?? ""} onChange={(v) => set("codigo_acceso", v)} />
+          <Input label="Video de recorrido (URL)" value={p.video_url ?? ""} onChange={(v) => set("video_url", v)} placeholder="YouTube / Vimeo" />
         </Section>
 
         <Section title="Ubicación en el mapa">
@@ -147,7 +290,7 @@ export default function PropertyEditor({ initial }: { initial?: PropertyRow }) {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white border border-luxe-line rounded-sm p-6">
+    <div className="bg-white border border-luxe-line rounded-sm p-6 animate-slide-up transition-shadow hover:shadow-soft">
       <h2 className="text-[11px] tracking-luxe uppercase text-luxe-gold-deep">{title}</h2>
       <div className="mt-5 space-y-4">{children}</div>
     </div>
@@ -156,12 +299,24 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Grid2({ children }: { children: React.ReactNode }) {
   return <div className="grid gap-4 md:grid-cols-2">{children}</div>;
 }
-function Input({ label, value, onChange, type = "text" }: { label: string; value: string; onChange: (v: string) => void; type?: string }) {
+function Input({ label, value, onChange, type = "text", placeholder }: { label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string }) {
   return (
     <label className="block">
       <span className="text-[11px] tracking-luxe uppercase text-luxe-muted">{label}</span>
-      <input type={type} value={value} onChange={(e) => onChange(e.target.value)}
-        className="mt-1.5 w-full bg-luxe-bone border border-luxe-line rounded-sm px-3 py-2.5 text-sm focus:outline-none focus:border-luxe-gold" />
+      <input type={type} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)}
+        className="mt-1.5 w-full bg-luxe-bone border border-luxe-line rounded-sm px-3 py-2.5 text-sm focus:outline-none focus:border-luxe-gold transition-colors" />
+    </label>
+  );
+}
+function Select({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: string[] }) {
+  return (
+    <label className="block">
+      <span className="text-[11px] tracking-luxe uppercase text-luxe-muted">{label}</span>
+      <select value={value} onChange={(e) => onChange(e.target.value)}
+        className="mt-1.5 w-full bg-luxe-bone border border-luxe-line rounded-sm px-3 py-2.5 text-sm focus:outline-none focus:border-luxe-gold">
+        <option value="">—</option>
+        {options.map((o) => <option key={o} value={o}>{o}</option>)}
+      </select>
     </label>
   );
 }
@@ -170,7 +325,7 @@ function Textarea({ label, value, onChange }: { label: string; value: string; on
     <label className="block">
       <span className="text-[11px] tracking-luxe uppercase text-luxe-muted">{label}</span>
       <textarea value={value} onChange={(e) => onChange(e.target.value)} rows={4}
-        className="mt-1.5 w-full bg-luxe-bone border border-luxe-line rounded-sm px-3 py-2.5 text-sm resize-none focus:outline-none focus:border-luxe-gold" />
+        className="mt-1.5 w-full bg-luxe-bone border border-luxe-line rounded-sm px-3 py-2.5 text-sm resize-none focus:outline-none focus:border-luxe-gold transition-colors" />
     </label>
   );
 }
@@ -178,7 +333,7 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
   return (
     <label className="flex items-center gap-3 mt-6 cursor-pointer">
       <span className={`w-10 h-6 rounded-full transition-colors relative ${checked ? "bg-luxe-gold" : "bg-luxe-line"}`}>
-        <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${checked ? "left-[18px]" : "left-0.5"}`} />
+        <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-200 ease-luxe ${checked ? "left-[18px]" : "left-0.5"}`} />
       </span>
       <input type="checkbox" className="hidden" checked={checked} onChange={(e) => onChange(e.target.checked)} />
       <span className="text-sm text-luxe-black">{label}</span>
