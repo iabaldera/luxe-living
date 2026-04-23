@@ -6,9 +6,11 @@ interface Photo { url: string; cat: string }
 export default function PropertyGallery({
   fotos, categorias = [], alt,
 }: { fotos: string[]; categorias?: string[]; alt: string }) {
+  const [broken, setBroken] = useState<Set<string>>(new Set());
+  const markBroken = (url: string) => setBroken((s) => { if (s.has(url)) return s; const n = new Set(s); n.add(url); return n; });
   const photos: Photo[] = fotos
     .map((url, i) => ({ url: (url || "").trim(), cat: (categorias[i] || "").trim() }))
-    .filter((p) => p.url);
+    .filter((p) => p.url && !broken.has(p.url));
 
   const groups = useMemo(() => {
     const map = new Map<string, Photo[]>();
@@ -54,6 +56,11 @@ export default function PropertyGallery({
 
   return (
     <>
+      <div aria-hidden className="hidden">
+        {fotos.filter((u) => u && !broken.has(u.trim())).map((u) => (
+          <img key={u} src={u} alt="" onError={() => markBroken(u.trim())} />
+        ))}
+      </div>
       <div className="relative grid grid-cols-4 grid-rows-2 gap-2 mb-10 animate-scale-in rounded-sm overflow-hidden">
         <button
           type="button"
