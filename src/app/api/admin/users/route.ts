@@ -16,6 +16,30 @@ function adminApi() {
   return createAdminClient(url, key, { auth: { persistSession: false } });
 }
 
+export async function GET() {
+  if (!(await requireAdmin())) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  const api = adminApi();
+  const all: any[] = [];
+  let page = 1;
+  while (true) {
+    const { data, error } = await api.auth.admin.listUsers({ page, perPage: 1000 });
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    const batch = data?.users ?? [];
+    all.push(...batch);
+    if (batch.length < 1000 || page > 20) break;
+    page += 1;
+  }
+  const users = all.map((u) => ({
+    id: u.id,
+    email: u.email,
+    created_at: u.created_at,
+    last_sign_in_at: u.last_sign_in_at ?? null,
+    email_confirmed_at: u.email_confirmed_at ?? null,
+    user_metadata: u.user_metadata,
+  }));
+  return NextResponse.json({ users });
+}
+
 export async function POST(req: Request) {
   if (!(await requireAdmin())) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   const body = await req.json().catch(() => ({}));

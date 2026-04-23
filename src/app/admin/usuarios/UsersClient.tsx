@@ -15,10 +15,22 @@ export interface AdminUser {
 
 const BUCKET = "luxe-media";
 
-export default function UsersClient({ users }: { users: AdminUser[] }) {
+export default function UsersClient({ users: initialUsers }: { users: AdminUser[] }) {
   const router = useRouter();
+  const toast = useToast();
+  const [users, setUsers] = useState<AdminUser[]>(initialUsers);
   const [editing, setEditing] = useState<AdminUser | null>(null);
   const [creating, setCreating] = useState(false);
+
+  async function reloadFromServer() {
+    try {
+      const res = await fetch("/api/admin/users", { method: "GET", cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.users)) setUsers(data.users);
+      }
+    } catch {}
+  }
 
   return (
     <>
@@ -94,14 +106,19 @@ export default function UsersClient({ users }: { users: AdminUser[] }) {
         <UserEditor
           user={editing}
           onClose={() => { setEditing(null); setCreating(false); }}
-          onSaved={() => { setEditing(null); setCreating(false); router.refresh(); }}
+          onSaved={(action) => {
+            setEditing(null);
+            setCreating(false);
+            reloadFromServer();
+            toast.push({ kind: "success", msg: action === "deleted" ? "Usuario eliminado" : action === "created" ? "Usuario creado" : "Usuario actualizado" });
+          }}
         />
       )}
     </>
   );
 }
 
-function UserEditor({ user, onClose, onSaved }: { user: AdminUser | null; onClose: () => void; onSaved: () => void }) {
+function UserEditor({ user, onClose, onSaved }: { user: AdminUser | null; onClose: () => void; onSaved: (action: "created" | "updated" | "deleted") => void }) {
   const supabase = createClient();
   const toast = useToast();
   const isNew = !user;
@@ -144,8 +161,7 @@ function UserEditor({ user, onClose, onSaved }: { user: AdminUser | null; onClos
       toast.push({ kind: "error", msg });
       return;
     }
-    try { sessionStorage.setItem("luxe-toast-pending", JSON.stringify({ kind: "success", msg: isNew ? "Usuario creado" : "Usuario actualizado" })); } catch {}
-    window.location.reload();
+    onSaved(isNew ? "created" : "updated");
   }
 
   async function remove() {
@@ -165,8 +181,7 @@ function UserEditor({ user, onClose, onSaved }: { user: AdminUser | null; onClos
       toast.push({ kind: "error", msg });
       return;
     }
-    try { sessionStorage.setItem("luxe-toast-pending", JSON.stringify({ kind: "success", msg: "Usuario eliminado" })); } catch {}
-    window.location.reload();
+    onSaved("deleted");
   }
 
   return (
