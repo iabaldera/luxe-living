@@ -45,7 +45,25 @@ export default function LocationPickerInner({
   lat, lng, onChange,
 }: { lat: number | null; lng: number | null; onChange: (lat: number, lng: number) => void }) {
   const [pos, setPos] = useState<[number, number]>([lat ?? DEFAULT[0], lng ?? DEFAULT[1]]);
-  const [styleKey, setStyleKey] = useState(DEFAULT_STYLE.key);
+  const [styleKey, setStyleKeyState] = useState(DEFAULT_STYLE.key);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const saved = localStorage.getItem("luxe-map-style");
+    if (saved && MAP_STYLES.some((s) => s.key === saved)) setStyleKeyState(saved);
+    const onCustom = (e: Event) => {
+      const k = (e as CustomEvent<string>).detail;
+      if (k && MAP_STYLES.some((s) => s.key === k)) setStyleKeyState(k);
+    };
+    window.addEventListener("luxe-map-style", onCustom as EventListener);
+    return () => window.removeEventListener("luxe-map-style", onCustom as EventListener);
+  }, []);
+  const setStyleKey = (k: string) => {
+    setStyleKeyState(k);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("luxe-map-style", k);
+      window.dispatchEvent(new CustomEvent("luxe-map-style", { detail: k }));
+    }
+  };
   const [search, setSearch] = useState("");
   const [urlInput, setUrlInput] = useState("");
   const [busy, setBusy] = useState(false);

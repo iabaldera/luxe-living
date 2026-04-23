@@ -12,22 +12,22 @@ const CENTER: [number, number] = [19.4517, -70.697];
 
 function makeIcon(color: string, isProperty = false, custom?: { icono?: string | null; color?: string | null }) {
   const fill = custom?.color || color;
-  const emoji = (custom?.icono || "").trim();
-  const isImg = /^https?:\/\//i.test(emoji);
-  const size = isProperty ? 40 : 34;
+  const raw = (custom?.icono || "").trim();
+  const isImg = /^https?:\/\//i.test(raw) || /^\/.+\.(png|jpg|jpeg|svg|webp|gif)(\?.*)?$/i.test(raw);
+  const size = isProperty ? 42 : 36;
   const stroke = isProperty ? "#C9A96E" : "#0A0A0A";
-  let svg: string;
-  if (emoji) {
+
+  let html: string;
+  if (raw) {
     const inner = isImg
-      ? `<image href="${emoji}" x="6" y="5" width="${size - 12}" height="${size - 12}" clip-path="circle(${(size - 12) / 2}px at ${(size - 12) / 2}px ${(size - 12) / 2}px)" transform="translate(0,0)" preserveAspectRatio="xMidYMid slice"/>`
-      : `<text x="${size / 2}" y="${size / 2 + 2}" text-anchor="middle" dominant-baseline="middle" font-size="${size * 0.55}">${escapeXml(emoji)}</text>`;
-    svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size + 8}" width="${size}" height="${size + 8}">
-      <path d="M${size / 2} ${size + 7}L${size / 2 - 6} ${size - 2}H${size / 2 + 6}Z" fill="${fill}"/>
-      <circle cx="${size / 2}" cy="${size / 2}" r="${size / 2 - 2}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>
+      ? `<img src="${escapeAttr(raw)}" alt="" style="width:70%;height:70%;object-fit:contain;pointer-events:none;" />`
+      : `<span style="font-size:${Math.round(size * 0.55)}px;line-height:1;">${escapeHtml(raw)}</span>`;
+    html = `<div class="luxe-pin" style="width:${size}px;height:${size}px;background:${fill};border:2px solid ${stroke};border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,0.35);position:relative;">
       ${inner}
-    </svg>`;
+      <span style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%) rotate(45deg);width:10px;height:10px;background:${fill};border-right:2px solid ${stroke};border-bottom:2px solid ${stroke};"></span>
+    </div>`;
   } else {
-    svg = isProperty
+    const svg = isProperty
       ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 40" width="34" height="42">
           <path d="M16 0C8 0 2 6 2 14c0 10 14 26 14 26s14-16 14-26c0-8-6-14-14-14z" fill="${fill}" stroke="#C9A96E" stroke-width="2"/>
           <path d="M10 16l6-5 6 5v7a1 1 0 0 1-1 1h-3v-4h-4v4h-3a1 1 0 0 1-1-1z" fill="#0A0A0A"/>
@@ -36,11 +36,13 @@ function makeIcon(color: string, isProperty = false, custom?: { icono?: string |
           <path d="M12 0C6 0 2 4 2 10c0 7 10 22 10 22s10-15 10-22c0-6-4-10-10-10z" fill="${fill}" stroke="#0A0A0A" stroke-width="1"/>
           <circle cx="12" cy="10" r="3.2" fill="#0A0A0A"/>
         </svg>`;
+    html = svg;
   }
-  const w = emoji ? size : (isProperty ? 34 : 28);
-  const h = emoji ? size + 8 : (isProperty ? 42 : 36);
+
+  const w = raw ? size : (isProperty ? 34 : 28);
+  const h = raw ? size + 8 : (isProperty ? 42 : 36);
   return L.divIcon({
-    html: svg,
+    html,
     className: "luxe-marker",
     iconSize: [w, h],
     iconAnchor: [w / 2, h],
@@ -48,9 +50,8 @@ function makeIcon(color: string, isProperty = false, custom?: { icono?: string |
   });
 }
 
-function escapeXml(s: string) {
-  return s.replace(/[<>&"']/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&apos;" }[c]!));
-}
+function escapeAttr(s: string) { return s.replace(/"/g, "&quot;").replace(/</g, "&lt;"); }
+function escapeHtml(s: string) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
 export default function LeafletMap({
   places,
@@ -67,7 +68,34 @@ export default function LeafletMap({
   locale: string;
   t: { openInMaps: string; cat: (k: string) => string; viewProperty?: string };
 }) {
-  const [styleKey, setStyleKey] = useState(DEFAULT_STYLE.key);
+  const [styleKey, setStyleKeyState] = useState(DEFAULT_STYLE.key);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const saved = localStorage.getItem("luxe-map-style");
+    if (saved && MAP_STYLES.some((s) => s.key === saved)) setStyleKeyState(saved);
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "luxe-map-style" && e.newValue && MAP_STYLES.some((s) => s.key === e.newValue)) {
+        setStyleKeyState(e.newValue);
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    const onCustom = (e: Event) => {
+      const k = (e as CustomEvent<string>).detail;
+      if (k && MAP_STYLES.some((s) => s.key === k)) setStyleKeyState(k);
+    };
+    window.addEventListener("luxe-map-style", onCustom as EventListener);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("luxe-map-style", onCustom as EventListener);
+    };
+  }, []);
+  const setStyleKey = (k: string) => {
+    setStyleKeyState(k);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("luxe-map-style", k);
+      window.dispatchEvent(new CustomEvent("luxe-map-style", { detail: k }));
+    }
+  };
   const style = MAP_STYLES.find((s) => s.key === styleKey) ?? DEFAULT_STYLE;
   useEffect(() => {
     const style = document.createElement("style");

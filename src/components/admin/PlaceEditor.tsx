@@ -118,6 +118,7 @@ export default function PlaceEditor({ initial }: { initial?: PlaceRow }) {
             </div>
             <div className="flex-1 space-y-3">
               <Input label="Emoji o URL de imagen" value={p.icono ?? ""} onChange={(v) => set("icono", v)} />
+              <IconUpload onUploaded={(url) => set("icono", url)} />
               <div className="flex flex-wrap gap-1.5">
                 {ICON_PRESETS.map((e) => (
                   <button key={e} type="button" onClick={() => set("icono", e)}
@@ -158,6 +159,30 @@ function Input({ label, value, onChange }: { label: string; value: string; onCha
 function Textarea({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return <label className="block"><span className="text-[11px] tracking-luxe uppercase text-luxe-muted">{label}</span><textarea rows={4} value={value} onChange={(e) => onChange(e.target.value)} className="mt-1.5 w-full bg-luxe-bone border border-luxe-line rounded-sm px-3 py-2.5 text-sm resize-none focus:outline-none focus:border-luxe-gold" /></label>;
 }
+function IconUpload({ onUploaded }: { onUploaded: (url: string) => void }) {
+  const supabase = createClient();
+  const [busy, setBusy] = useState(false);
+  async function upload(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setBusy(true);
+    const ext = f.name.split(".").pop() || "png";
+    const path = `iconos/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage.from("luxe-media").upload(path, f, { cacheControl: "3600" });
+    setBusy(false);
+    e.target.value = "";
+    if (error) return alert(error.message);
+    const { data } = supabase.storage.from("luxe-media").getPublicUrl(path);
+    onUploaded(data.publicUrl);
+  }
+  return (
+    <label className="inline-flex items-center gap-2 cursor-pointer text-[11px] tracking-luxe uppercase text-luxe-muted hover:text-luxe-gold">
+      <input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" className="hidden" onChange={upload} disabled={busy} />
+      <span className="px-3 py-1.5 border border-luxe-line rounded-sm bg-luxe-bone hover:border-luxe-gold">{busy ? "Subiendo…" : "↑ Subir PNG/imagen"}</span>
+    </label>
+  );
+}
+
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <label className="flex items-center gap-3 cursor-pointer">

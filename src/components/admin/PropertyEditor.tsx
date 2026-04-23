@@ -318,6 +318,7 @@ export default function PropertyEditor({ initial }: { initial?: PropertyRow }) {
             </div>
             <div className="flex-1 space-y-3">
               <Input label="Emoji o URL de imagen" value={p.icono ?? ""} onChange={(v) => set("icono", v)} />
+              <IconUploadProp onUploaded={(url) => set("icono", url)} />
               <div className="flex flex-wrap gap-1.5">
                 {ICON_PRESETS_PROP.map((e) => (
                   <button key={e} type="button" onClick={() => set("icono", e)}
@@ -419,6 +420,30 @@ function Textarea({ label, value, onChange }: { label: string; value: string; on
     </label>
   );
 }
+function IconUploadProp({ onUploaded }: { onUploaded: (url: string) => void }) {
+  const supabase = createClient();
+  const [busy, setBusy] = useState(false);
+  async function upload(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setBusy(true);
+    const ext = f.name.split(".").pop() || "png";
+    const path = `iconos/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage.from("luxe-media").upload(path, f, { cacheControl: "3600" });
+    setBusy(false);
+    e.target.value = "";
+    if (error) return alert(error.message);
+    const { data } = supabase.storage.from("luxe-media").getPublicUrl(path);
+    onUploaded(data.publicUrl);
+  }
+  return (
+    <label className="inline-flex items-center gap-2 cursor-pointer text-[11px] tracking-luxe uppercase text-luxe-muted hover:text-luxe-gold">
+      <input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" className="hidden" onChange={upload} disabled={busy} />
+      <span className="px-3 py-1.5 border border-luxe-line rounded-sm bg-luxe-bone hover:border-luxe-gold">{busy ? "Subiendo…" : "↑ Subir PNG/imagen"}</span>
+    </label>
+  );
+}
+
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <label className="flex items-center gap-3 mt-6 cursor-pointer">
