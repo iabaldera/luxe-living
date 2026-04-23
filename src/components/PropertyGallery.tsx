@@ -166,17 +166,23 @@ export default function PropertyGallery({
       )}
 
       {light !== null && (
-        <div className="fixed inset-0 z-[10000] bg-luxe-black/95 flex flex-col animate-fade-in">
-          <div className="flex items-center justify-between px-5 py-4 text-luxe-bone">
+        <div className="fixed inset-0 z-[10000] bg-luxe-black/95 flex flex-col animate-fade-in pt-16 lg:pt-0">
+          <div className="flex items-center justify-between px-5 py-3 text-luxe-bone">
             <span className="text-xs tracking-luxe uppercase">
               {light + 1} / {photos.length}{photos[light].cat ? ` · ${photos[light].cat}` : ""}
             </span>
-            <button onClick={() => setLight(null)} className="text-luxe-bone hover:text-luxe-gold text-2xl leading-none">×</button>
+            <button
+              onClick={() => setLight(null)}
+              aria-label="Cerrar"
+              className="w-10 h-10 rounded-full bg-luxe-black/60 border border-luxe-gold/50 text-luxe-bone hover:bg-luxe-gold hover:text-luxe-black transition-colors flex items-center justify-center"
+            >
+              <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
           </div>
-          <div className="flex-1 flex items-center justify-center relative px-4 pb-4">
+          <div className="flex-1 flex items-center justify-center relative px-4 min-h-0">
             <button
               onClick={() => setLight((i) => ((i ?? 0) - 1 + photos.length) % photos.length)}
-              className="absolute left-4 md:left-8 w-10 h-10 rounded-full border border-luxe-gold/60 text-luxe-bone hover:bg-luxe-gold hover:text-luxe-black transition-colors flex items-center justify-center"
+              className="absolute left-4 md:left-8 w-10 h-10 rounded-full border border-luxe-gold/60 text-luxe-bone hover:bg-luxe-gold hover:text-luxe-black transition-colors flex items-center justify-center z-10"
               aria-label="Anterior"
             >‹</button>
             <img
@@ -187,16 +193,16 @@ export default function PropertyGallery({
             />
             <button
               onClick={() => setLight((i) => ((i ?? 0) + 1) % photos.length)}
-              className="absolute right-4 md:right-8 w-10 h-10 rounded-full border border-luxe-gold/60 text-luxe-bone hover:bg-luxe-gold hover:text-luxe-black transition-colors flex items-center justify-center"
+              className="absolute right-4 md:right-8 w-10 h-10 rounded-full border border-luxe-gold/60 text-luxe-bone hover:bg-luxe-gold hover:text-luxe-black transition-colors flex items-center justify-center z-10"
               aria-label="Siguiente"
             >›</button>
           </div>
-          <div className="px-4 pb-5 flex gap-2 overflow-x-auto scrollbar-thin">
+          <div className="px-4 py-3 flex gap-2 overflow-x-auto scrollbar-thin border-t border-luxe-bone/10">
             {photos.map((p, i) => (
               <button
                 key={p.url + i}
                 onClick={() => setLight(i)}
-                className={`flex-shrink-0 w-20 h-14 bg-cover bg-center rounded-sm border-2 transition-all ${
+                className={`flex-shrink-0 w-16 h-12 bg-cover bg-center rounded-sm border-2 transition-all ${
                   i === light ? "border-luxe-gold scale-105" : "border-transparent opacity-60 hover:opacity-100"
                 }`}
                 style={{ backgroundImage: `url('${p.url}')` }}
