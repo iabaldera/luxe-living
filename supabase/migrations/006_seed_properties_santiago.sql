@@ -1,5 +1,26 @@
--- 10 propiedades de muestra en Santiago de los Caballeros, RD.
--- Coordenadas reales de sectores reconocidos (Los Jardines, La Trinitaria, Gurabo, Cerros, Bella Vista, etc.)
+-- Seed: 10 propiedades en Santiago de los Caballeros (idempotente).
+-- Asegura primero que todas las columnas existan, luego inserta.
+
+alter table public.properties
+  add column if not exists tipo text,
+  add column if not exists piso text,
+  add column if not exists area_m2 numeric,
+  add column if not exists camas int,
+  add column if not exists min_noches int,
+  add column if not exists check_in_hora text,
+  add column if not exists check_out_hora text,
+  add column if not exists destacados text[] not null default '{}',
+  add column if not exists politica_cancelacion text,
+  add column if not exists politica_cancelacion_en text,
+  add column if not exists wifi_nombre text,
+  add column if not exists wifi_clave text,
+  add column if not exists codigo_acceso text,
+  add column if not exists video_url text,
+  add column if not exists fotos_categorias text[] not null default '{}',
+  add column if not exists airbnb_url text,
+  add column if not exists booking_url text,
+  add column if not exists icono text,
+  add column if not exists icono_color text;
 
 insert into public.properties (
   slug, nombre, nombre_en, ubicacion, ubicacion_en, descripcion, descripcion_en,
@@ -96,4 +117,27 @@ insert into public.properties (
   4, 4, 10, 480, 'USD', array['wifi','ac','tv','parking','cocina_equipada','piscina','jardin','bbq','lavadora','seguridad_24h','jacuzzi'],
   19.4450, -70.7020, array[]::text[], true, 'villa', null, 340, 6, 3,
   '16:00', '11:00', array['Residencial exclusivo','Piscina','10 huéspedes']
-);
+)
+on conflict (slug) do update set
+  nombre = excluded.nombre,
+  nombre_en = excluded.nombre_en,
+  ubicacion = excluded.ubicacion,
+  ubicacion_en = excluded.ubicacion_en,
+  descripcion = excluded.descripcion,
+  descripcion_en = excluded.descripcion_en,
+  habitaciones = excluded.habitaciones,
+  banos = excluded.banos,
+  huespedes = excluded.huespedes,
+  precio_noche = excluded.precio_noche,
+  amenidades = excluded.amenidades,
+  lat = excluded.lat,
+  lng = excluded.lng,
+  activo = true,
+  tipo = excluded.tipo,
+  piso = excluded.piso,
+  area_m2 = excluded.area_m2,
+  camas = excluded.camas,
+  min_noches = excluded.min_noches,
+  destacados = excluded.destacados;
+
+notify pgrst, 'reload schema';
