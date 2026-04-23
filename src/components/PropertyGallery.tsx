@@ -6,7 +6,9 @@ interface Photo { url: string; cat: string }
 export default function PropertyGallery({
   fotos, categorias = [], alt,
 }: { fotos: string[]; categorias?: string[]; alt: string }) {
-  const photos: Photo[] = fotos.map((url, i) => ({ url, cat: (categorias[i] || "").trim() }));
+  const photos: Photo[] = fotos
+    .map((url, i) => ({ url: (url || "").trim(), cat: (categorias[i] || "").trim() }))
+    .filter((p) => p.url);
 
   const groups = useMemo(() => {
     const map = new Map<string, Photo[]>();
@@ -37,7 +39,7 @@ export default function PropertyGallery({
     return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
   }, [tourOpen, light, photos.length]);
 
-  if (!fotos.length) return null;
+  if (!photos.length) return null;
 
   const cover = photos[0].url;
   const rest = photos.slice(1, 5);
