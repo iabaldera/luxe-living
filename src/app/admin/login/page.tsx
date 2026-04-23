@@ -1,13 +1,11 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/browser";
 
 export default function LoginPage() {
   const router = useRouter();
-  const supabase = createClient();
-  const [email, setEmail] = useState("");
-  const [pwd, setPwd] = useState("");
+  const [user, setUser] = useState("");
+  const [pin, setPin] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -15,37 +13,47 @@ export default function LoginPage() {
     e.preventDefault();
     setErr(null);
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password: pwd });
-    setLoading(false);
-    if (error) return setErr(error.message);
-    router.push("/admin");
-    router.refresh();
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user, pin }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { setErr(data.error ?? "No se pudo iniciar sesión."); return; }
+      router.push("/admin");
+      router.refresh();
+    } finally { setLoading(false); }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-luxe-black">
+    <div className="min-h-screen flex items-center justify-center bg-luxe-black px-4">
       <form onSubmit={submit} className="w-full max-w-sm bg-luxe-bone p-10 rounded-sm shadow-soft">
         <p className="text-[11px] tracking-luxe uppercase text-luxe-gold-deep">Luxe Living</p>
         <h1 className="mt-2 font-serif text-3xl text-luxe-black">Dashboard</h1>
         <div className="mt-8 space-y-4">
           <label className="block">
-            <span className="text-[11px] tracking-luxe uppercase text-luxe-muted">Correo</span>
+            <span className="text-[11px] tracking-luxe uppercase text-luxe-muted">Usuario</span>
             <input
-              type="email"
+              type="text"
+              autoComplete="username"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={user}
+              onChange={(e) => setUser(e.target.value)}
               className="mt-1.5 w-full bg-white border border-luxe-line rounded-sm px-3 py-2.5 text-sm focus:outline-none focus:border-luxe-gold"
             />
           </label>
           <label className="block">
-            <span className="text-[11px] tracking-luxe uppercase text-luxe-muted">Contraseña</span>
+            <span className="text-[11px] tracking-luxe uppercase text-luxe-muted">PIN</span>
             <input
               type="password"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              autoComplete="current-password"
               required
-              value={pwd}
-              onChange={(e) => setPwd(e.target.value)}
-              className="mt-1.5 w-full bg-white border border-luxe-line rounded-sm px-3 py-2.5 text-sm focus:outline-none focus:border-luxe-gold"
+              value={pin}
+              onChange={(e) => setPin(e.target.value)}
+              className="mt-1.5 w-full bg-white border border-luxe-line rounded-sm px-3 py-2.5 text-sm tracking-[0.4em] focus:outline-none focus:border-luxe-gold"
             />
           </label>
           {err && <p className="text-sm text-red-600">{err}</p>}
