@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
@@ -6,20 +7,43 @@ export async function POST(req: Request) {
 
   const ADMIN_USER = process.env.ADMIN_USER ?? "admin";
   const ADMIN_PIN = process.env.ADMIN_PIN ?? "admin1234";
-  const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
-  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-
-  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
-    return NextResponse.json({ error: "Configuración de admin incompleta. Define ADMIN_EMAIL y ADMIN_PASSWORD en Vercel." }, { status: 500 });
-  }
 
   if (String(user).trim().toLowerCase() !== ADMIN_USER.toLowerCase() || String(pin).trim() !== ADMIN_PIN) {
     return NextResponse.json({ error: "Usuario o PIN incorrecto." }, { status: 401 });
   }
 
-  const supabase = createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
-  if (error) return NextResponse.json({ error: error.message }, { status: 401 });
+  // Credenciales del usuario Supabase que respalda la sesión admin.
+  // Si no se definen, derivamos de ADMIN_USER + ADMIN_PIN con un sufijo para cumplir mínimos.
+  const adminEmail = (process.env.ADMIN_EMAIL ?? `${ADMIN_USER.toLowerCase()}@luxeliving.app`).trim();
+  const adminPassword = process.env.ADMIN_PASSWORD ?? `${ADMIN_PIN}-luxe-admin`;
 
-  return NextResponse.json({ ok: true });
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!url) return NextResponse.json({ error: "Falta NEXT_PUBLIC_SUPABASE_URL." }, { status: 500 });
+
+  const supabase = createClient();
+  let { error } = await supabase.auth.signInWithPassword({ email: adminEmail, password: adminPassword });
+
+  if (error) {
+    // Intentamos auto-provisionar el usuario admin usando la service role key.
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!serviceKey) {
+      return NextResponse.json({
+        error: "No se pudo iniciar sesión. Define SUPABASE_SERVICE_ROLE_KEY en Vercel para que el admin se cree automáticamente, o define ADMIN_EMAIL y ADMIN_PASSWORD con un usuario Supabase existente.",
+      }, { status: 500 });
+    }
+    const adminApi = createAdminClient(url, serviceKey, { auth: { persistSession: false } });
+    const { error: createErr } = await adminApi.auth.admin.createUser({
+      email: adminEmail,
+      password: adminPassword,
+      email_confirm: true,
+      user_metadata: { role: "admin" },
+    });
+    if (createErr && !/registered|exists/i.test(createErr.message)) {
+      return NextResponse.json({ error: `Error creando admin: ${createErr.message}` }, { status: 500 });
+    }
+    const retry = await supabase.auth.signInWithPassword({ email: adminEmail, password: adminPassword });
+    if (retry.error) return NextResponse.json({ error: retry.error.message }, { status: 401 });
+  }
+
+  return NextResponse.json({ ok: true, email: adminEmail });
 }

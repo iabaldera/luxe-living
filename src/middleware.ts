@@ -19,8 +19,9 @@ export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
   const isAdmin = path.startsWith("/admin");
   const isAdminLogin = path === "/admin/login";
-  const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
-  const isAdminUser = !!user && !!adminEmail && user.email?.toLowerCase() === adminEmail;
+  const ADMIN_USER = process.env.ADMIN_USER ?? "admin";
+  const adminEmail = (process.env.ADMIN_EMAIL ?? `${ADMIN_USER.toLowerCase()}@luxeliving.app`).toLowerCase();
+  const isAdminUser = !!user && user.email?.toLowerCase() === adminEmail;
 
   if (isAdmin && !isAdminLogin && !isAdminUser) {
     const url = req.nextUrl.clone();
