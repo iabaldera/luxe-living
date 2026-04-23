@@ -18,18 +18,14 @@ export default function LoginPage() {
     e.preventDefault();
     setErr(null); setLoading(true);
     try {
-      if (mode === "pin") {
-        const res = await fetch("/api/admin/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user, pin }),
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) { setErr(data.error ?? "No se pudo iniciar sesión."); return; }
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password: pwd });
-        if (error) { setErr(error.message); return; }
-      }
+      const payload = mode === "pin" ? { user, pin } : { email, password: pwd };
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { setErr(data.error ?? "No se pudo iniciar sesión."); return; }
       router.push("/admin");
       router.refresh();
     } finally { setLoading(false); }
